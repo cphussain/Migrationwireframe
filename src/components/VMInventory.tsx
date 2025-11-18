@@ -8,6 +8,16 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '.
 import { Button } from './ui/button';
 import { Search, Filter, X } from 'lucide-react';
 
+interface UserSession {
+  username: string;
+  role: string;
+  region?: string;
+}
+
+interface VMInventoryProps {
+  userSession: UserSession;
+}
+
 // Mock VM data generator for 100k VMs
 const generateVMs = () => {
   const vms = [];
@@ -35,7 +45,7 @@ const generateVMs = () => {
   return vms;
 };
 
-export function VMInventory() {
+export function VMInventory({ userSession }: VMInventoryProps) {
   const [vms] = useState(() => generateVMs());
   const [searchTerm, setSearchTerm] = useState('');
   const [regionFilter, setRegionFilter] = useState('all');

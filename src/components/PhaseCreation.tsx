@@ -6,9 +6,20 @@ import { Label } from './ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from './ui/select';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from './ui/table';
 import { Badge } from './ui/badge';
-import { Calendar, Plus, ChevronRight, ChevronLeft, X, Filter, Search } from 'lucide-react';
+import { Calendar, Plus, ChevronRight, ChevronLeft, X, Filter, Search, Play } from 'lucide-react';
 import { DndProvider, useDrag, useDrop } from 'react-dnd';
 import { HTML5Backend } from 'react-dnd-html5-backend';
+import { MigrationProgress } from './MigrationProgress';
+
+interface UserSession {
+  username: string;
+  role: string;
+  region?: string;
+}
+
+interface PhaseCreationProps {
+  userSession: UserSession;
+}
 
 interface Phase {
   id: string;
@@ -19,6 +30,7 @@ interface Phase {
   vmCount: number;
   createdDate: string;
   assignedTo: string;
+  status: 'planned' | 'migrating' | 'completed';
 }
 
 interface VM {
@@ -143,7 +155,7 @@ const generateAvailableVMs = () => {
   return vms;
 };
 
-export function PhaseCreation() {
+export function PhaseCreation({ userSession }: PhaseCreationProps) {
   const [phases, setPhases] = useState<Phase[]>([
     {
       id: 'P001',
@@ -153,7 +165,8 @@ export function PhaseCreation() {
       changeRequest: 'CHG0001234',
       vmCount: 5,
       createdDate: '2025-11-10',
-      assignedTo: 'John Doe'
+      assignedTo: 'John Doe',
+      status: 'planned'
     },
     {
       id: 'P002',
@@ -163,7 +176,8 @@ export function PhaseCreation() {
       changeRequest: 'CHG0001235',
       vmCount: 8,
       createdDate: '2025-11-12',
-      assignedTo: 'Jane Smith'
+      assignedTo: 'Jane Smith',
+      status: 'migrating'
     }
   ]);
 
@@ -237,7 +251,8 @@ export function PhaseCreation() {
       changeRequest,
       vmCount: selectedVMs.length,
       createdDate: new Date().toISOString().split('T')[0],
-      assignedTo
+      assignedTo,
+      status: 'planned'
     };
 
     setPhases([...phases, newPhase]);
@@ -305,6 +320,32 @@ export function PhaseCreation() {
 
   const hasActivePhaseFilters = filterRegion !== 'all' || filterAssignedTo !== 'all' || 
                                  phaseSearchTerm !== '' || filterDateFrom !== '' || filterDateTo !== '';
+
+  // Migration progress state
+  const [migrationPhase, setMigrationPhase] = useState<Phase | null>(null);
+  const [showMigrationProgress, setShowMigrationProgress] = useState(false);
+
+  const handleStartMigration = (phase: Phase) => {
+    setMigrationPhase(phase);
+    setShowMigrationProgress(true);
+    // Update phase status to migrating
+    setPhases(phases.map(p => 
+      p.id === phase.id ? { ...p, status: 'migrating' as const } : p
+    ));
+  };
+
+  const handleMigrationComplete = () => {
+    if (migrationPhase) {
+      setPhases(phases.map(p => 
+        p.id === migrationPhase.id ? { ...p, status: 'completed' as const } : p
+      ));
+    }
+    setShowMigrationProgress(false);
+    setMigrationPhase(null);
+  };
+
+  // Check if user can start migration based on role
+  const canStartMigration = userSession.role === 'Administrator' || userSession.role === 'Migration Engineer';
 
   return (
     <DndProvider backend={HTML5Backend}>
@@ -598,12 +639,14 @@ export function PhaseCreation() {
                     <TableHead className="text-[#DB0011]">VMs</TableHead>
                     <TableHead className="text-[#DB0011]">Assigned To</TableHead>
                     <TableHead className="text-[#DB0011]">Created</TableHead>
+                    <TableHead className="text-[#DB0011]">Status</TableHead>
+                    {canStartMigration && <TableHead className="text-[#DB0011]">Actions</TableHead>}
                   </TableRow>
                 </TableHeader>
                 <TableBody>
                   {filteredPhases.length === 0 ? (
                     <TableRow>
-                      <TableCell colSpan={8} className="text-center text-slate-500 py-8">
+                      <TableCell colSpan={canStartMigration ? 10 : 9} className="text-center text-slate-500 py-8">
                         No phases found matching the filters
                       </TableCell>
                     </TableRow>
@@ -624,6 +667,50 @@ export function PhaseCreation() {
                         <TableCell className="text-slate-700">{phase.vmCount}</TableCell>
                         <TableCell className="text-slate-700">{phase.assignedTo}</TableCell>
                         <TableCell className="text-slate-600">{phase.createdDate}</TableCell>
+                        <TableCell className="text-slate-700">
+                          <Badge
+                            variant="outline"
+                            className={
+                              phase.status === 'planned' ? 'bg-gray-50 text-gray-700' :
+                              phase.status === 'migrating' ? 'bg-yellow-50 text-yellow-700' :
+                              'bg-green-50 text-green-700'
+                            }
+                          >
+                            {phase.status.charAt(0).toUpperCase() + phase.status.slice(1)}
+                          </Badge>
+                        </TableCell>
+                        {canStartMigration && (
+                          <TableCell>
+                            {phase.status === 'planned' && (
+                              <Button
+                                size="sm"
+                                onClick={() => handleStartMigration(phase)}
+                                className="bg-[#DB0011] hover:bg-[#A50010]"
+                              >
+                                <Play className="size-4 mr-2" />
+                                Start Migration
+                              </Button>
+                            )}
+                            {phase.status === 'migrating' && (
+                              <Button
+                                size="sm"
+                                variant="outline"
+                                onClick={() => {
+                                  setMigrationPhase(phase);
+                                  setShowMigrationProgress(true);
+                                }}
+                                className="text-yellow-700 border-yellow-300 hover:bg-yellow-50"
+                              >
+                                View Progress
+                              </Button>
+                            )}
+                            {phase.status === 'completed' && (
+                              <Badge variant="outline" className="bg-green-100 text-green-700">
+                                Completed
+                              </Badge>
+                            )}
+                          </TableCell>
+                        )}
                       </TableRow>
                     ))
                   )}
@@ -633,6 +720,16 @@ export function PhaseCreation() {
           </CardContent>
         </Card>
       </div>
+
+      {/* Migration Progress Dialog */}
+      {migrationPhase && (
+        <MigrationProgress
+          phaseName={migrationPhase.name}
+          vmCount={migrationPhase.vmCount}
+          isOpen={showMigrationProgress}
+          onClose={handleMigrationComplete}
+        />
+      )}
     </DndProvider>
   );
 }

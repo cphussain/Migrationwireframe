@@ -10,6 +10,16 @@ import { Badge } from './ui/badge';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from './ui/select';
 import { Plus, Edit2, Lock } from 'lucide-react';
 
+interface UserSession {
+  username: string;
+  role: string;
+  region?: string;
+}
+
+interface CategoryManagementProps {
+  userSession: UserSession;
+}
+
 interface Category {
   id: string;
   name: string;
@@ -41,7 +51,7 @@ const initialCategories: Category[] = [
   }
 ];
 
-export function CategoryManagement() {
+export function CategoryManagement({ userSession }: CategoryManagementProps) {
   const [categories, setCategories] = useState<Category[]>(initialCategories);
   const [isEditing, setIsEditing] = useState(false);
   const [isAdding, setIsAdding] = useState(false);

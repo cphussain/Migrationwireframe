@@ -7,7 +7,7 @@ import { Alert, AlertDescription } from './ui/alert';
 import { ArrowRight, Lock, User } from 'lucide-react';
 
 interface LoginProps {
-  onLogin: (username: string, role: string) => void;
+  onLogin: (username: string, role: string, region?: string) => void;
 }
 
 export function Login({ onLogin }: LoginProps) {
@@ -15,11 +15,12 @@ export function Login({ onLogin }: LoginProps) {
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
 
-  // Mock user credentials
+  // Mock user credentials with roles and regions
   const mockUsers = [
-    { username: 'john.doe', password: 'password123', role: 'Migration Lead' },
-    { username: 'jane.smith', password: 'password123', role: 'Regional Lead' },
-    { username: 'admin', password: 'admin123', role: 'Administrator' },
+    { username: 'admin', password: 'admin123', role: 'Administrator', region: undefined },
+    { username: 'john.doe', password: 'password123', role: 'Region Lead', region: 'US-East' },
+    { username: 'jane.smith', password: 'password123', role: 'Region Lead', region: 'EU-Central' },
+    { username: 'mike.wilson', password: 'password123', role: 'Migration Engineer', region: undefined },
   ];
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -31,7 +32,7 @@ export function Login({ onLogin }: LoginProps) {
     );
 
     if (user) {
-      onLogin(user.username, user.role);
+      onLogin(user.username, user.role, user.region);
     } else {
       setError('Invalid username or password');
     }
@@ -62,8 +63,9 @@ export function Login({ onLogin }: LoginProps) {
               </svg>
             </div>
           </div>
-          <h1 className="text-white mb-2">HSBC Migration Portal</h1>
-          <p className="text-white/90">VMware to OpenShift Migration</p>
+          <h1 className="text-white mb-2">MiOA</h1>
+          <p className="text-white/90">Migration Orchestration & Automation</p>
+          <p className="text-white/80 text-sm mt-1">VMware to OpenShift Migration</p>
         </div>
 
         {/* Login Card */}
@@ -120,9 +122,10 @@ export function Login({ onLogin }: LoginProps) {
 
               <div className="mt-4 p-3 bg-slate-50 rounded text-sm text-slate-600">
                 <p className="mb-2">Demo Credentials:</p>
-                <p>• john.doe / password123</p>
-                <p>• jane.smith / password123</p>
-                <p>• admin / admin123</p>
+                <p>• admin / admin123 (Administrator)</p>
+                <p>• john.doe / password123 (Region Lead - US-East)</p>
+                <p>• jane.smith / password123 (Region Lead - EU-Central)</p>
+                <p>• mike.wilson / password123 (Migration Engineer)</p>
               </div>
             </form>
           </CardContent>

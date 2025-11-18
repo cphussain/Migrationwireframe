@@ -5,28 +5,35 @@ import { CategoryManagement } from './components/CategoryManagement';
 import { PhaseCreation } from './components/PhaseCreation';
 import { MigrationReports } from './components/MigrationReports';
 import { LeadAssignment } from './components/LeadAssignment';
-import { Server, Tags, GitBranch, BarChart3, ArrowRight, Users, LogOut, User } from 'lucide-react';
+import { Server, Tags, GitBranch, BarChart3, ArrowRight, Users, LogOut, User, Shield, MapPin } from 'lucide-react';
 import { Button } from './components/ui/button';
+import { Badge } from './components/ui/badge';
 
 interface UserSession {
   username: string;
   role: string;
+  region?: string;
 }
 
 export default function App() {
   const [userSession, setUserSession] = useState<UserSession | null>(null);
   const [activeView, setActiveView] = useState('inventory');
 
-  const menuItems = [
-    { id: 'inventory', label: 'VM Inventory', icon: Server },
-    { id: 'categories', label: 'Categories', icon: Tags },
-    { id: 'leads', label: 'Lead Assignment', icon: Users },
-    { id: 'phases', label: 'Phase Creation', icon: GitBranch },
-    { id: 'reports', label: 'Reports', icon: BarChart3 },
+  const allMenuItems = [
+    { id: 'inventory', label: 'VM Inventory', icon: Server, roles: ['Administrator', 'Region Lead', 'Migration Engineer'] },
+    { id: 'categories', label: 'Categories', icon: Tags, roles: ['Administrator', 'Region Lead'] },
+    { id: 'leads', label: 'Lead Assignment', icon: Users, roles: ['Administrator'] },
+    { id: 'phases', label: 'Phase Creation', icon: GitBranch, roles: ['Administrator', 'Region Lead', 'Migration Engineer'] },
+    { id: 'reports', label: 'Reports', icon: BarChart3, roles: ['Administrator', 'Region Lead'] },
   ];
 
-  const handleLogin = (username: string, role: string) => {
-    setUserSession({ username, role });
+  // Filter menu items based on user role
+  const menuItems = userSession 
+    ? allMenuItems.filter(item => item.roles.includes(userSession.role))
+    : [];
+
+  const handleLogin = (username: string, role: string, region?: string) => {
+    setUserSession({ username, role, region });
   };
 
   const handleLogout = () => {
@@ -65,8 +72,9 @@ export default function App() {
               </svg>
             </div>
           </div>
-          <h1 className="text-white text-center">HSBC Migration Portal</h1>
-          <p className="text-sm text-white/80 mt-1 text-center">VMware to OpenShift</p>
+          <h1 className="text-white text-center">MiOA</h1>
+          <p className="text-sm text-white/90 mt-1 text-center">Migration Orchestration</p>
+          <p className="text-xs text-white/80 text-center">& Automation</p>
         </div>
 
         {/* Navigation Menu */}
@@ -101,7 +109,16 @@ export default function App() {
             </div>
             <div className="flex-1">
               <p className="text-white text-sm">{userSession.username}</p>
-              <p className="text-white/70 text-xs">{userSession.role}</p>
+              <div className="flex items-center gap-1 mt-1">
+                <Shield className="size-3 text-white/70" />
+                <p className="text-white/70 text-xs">{userSession.role}</p>
+              </div>
+              {userSession.region && (
+                <div className="flex items-center gap-1 mt-0.5">
+                  <MapPin className="size-3 text-white/70" />
+                  <p className="text-white/70 text-xs">{userSession.region}</p>
+                </div>
+              )}
             </div>
           </div>
           <Button
@@ -139,7 +156,16 @@ export default function App() {
               </div>
               <div>
                 <p className="text-slate-900 text-sm">{userSession.username}</p>
-                <p className="text-slate-600 text-xs">{userSession.role}</p>
+                <div className="flex items-center gap-2">
+                  <Badge variant="outline" className="text-xs px-2 py-0">
+                    {userSession.role}
+                  </Badge>
+                  {userSession.region && (
+                    <Badge variant="outline" className="text-xs px-2 py-0 bg-blue-50 text-blue-700 border-blue-200">
+                      {userSession.region}
+                    </Badge>
+                  )}
+                </div>
               </div>
             </div>
           </div>
@@ -147,11 +173,11 @@ export default function App() {
 
         {/* Content Area */}
         <div className="p-8">
-          {activeView === 'inventory' && <VMInventory />}
-          {activeView === 'categories' && <CategoryManagement />}
+          {activeView === 'inventory' && <VMInventory userSession={userSession} />}
+          {activeView === 'categories' && <CategoryManagement userSession={userSession} />}
           {activeView === 'leads' && <LeadAssignment />}
-          {activeView === 'phases' && <PhaseCreation />}
-          {activeView === 'reports' && <MigrationReports />}
+          {activeView === 'phases' && <PhaseCreation userSession={userSession} />}
+          {activeView === 'reports' && <MigrationReports userSession={userSession} />}
         </div>
       </main>
     </div>

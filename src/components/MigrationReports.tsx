@@ -4,6 +4,16 @@ import { Badge } from './ui/badge';
 import { Progress } from './ui/progress';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, PieChart, Pie, Cell } from 'recharts';
 
+interface UserSession {
+  username: string;
+  role: string;
+  region?: string;
+}
+
+interface MigrationReportsProps {
+  userSession: UserSession;
+}
+
 const regionData = [
   { region: 'US-East', total: 15, completed: 8, inProgress: 5, notStarted: 2 },
   { region: 'US-West', total: 12, completed: 4, inProgress: 6, notStarted: 2 },
@@ -24,7 +34,7 @@ const statusData = [
   { name: 'Not Started', value: 8, color: '#94a3b8' }
 ];
 
-export function MigrationReports() {
+export function MigrationReports({ userSession }: MigrationReportsProps) {
   return (
     <div className="space-y-6">
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
