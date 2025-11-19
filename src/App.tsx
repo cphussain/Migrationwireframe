@@ -5,9 +5,17 @@ import { CategoryManagement } from './components/CategoryManagement';
 import { PhaseCreation } from './components/PhaseCreation';
 import { MigrationReports } from './components/MigrationReports';
 import { LeadAssignment } from './components/LeadAssignment';
-import { Server, Tags, GitBranch, BarChart3, ArrowRight, Users, LogOut, User, Shield, MapPin } from 'lucide-react';
+import { Server, Tags, GitBranch, BarChart3, ArrowRight, Users, LogOut, User, Shield, MapPin, ChevronDown } from 'lucide-react';
 import { Button } from './components/ui/button';
 import { Badge } from './components/ui/badge';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from './components/ui/dropdown-menu';
 
 interface UserSession {
   username: string;
@@ -17,13 +25,13 @@ interface UserSession {
 
 export default function App() {
   const [userSession, setUserSession] = useState<UserSession | null>(null);
-  const [activeView, setActiveView] = useState('inventory');
+  const [activeView, setActiveView] = useState('phases');
 
   const allMenuItems = [
+    { id: 'phases', label: 'Phases', icon: GitBranch, roles: ['Administrator', 'Region Lead', 'Migration Engineer'] },
     { id: 'inventory', label: 'VM Inventory', icon: Server, roles: ['Administrator', 'Region Lead', 'Migration Engineer'] },
     { id: 'categories', label: 'Categories', icon: Tags, roles: ['Administrator', 'Region Lead'] },
     { id: 'leads', label: 'Lead Assignment', icon: Users, roles: ['Administrator'] },
-    { id: 'phases', label: 'Phase Creation', icon: GitBranch, roles: ['Administrator', 'Region Lead', 'Migration Engineer'] },
     { id: 'reports', label: 'Reports', icon: BarChart3, roles: ['Administrator', 'Region Lead'] },
   ];
 
@@ -38,7 +46,7 @@ export default function App() {
 
   const handleLogout = () => {
     setUserSession(null);
-    setActiveView('inventory');
+    setActiveView('phases');
   };
 
   // Show login if not authenticated
@@ -101,40 +109,15 @@ export default function App() {
           </ul>
         </nav>
 
-        {/* User Info & Logout */}
+        {/* Footer - simplified without user info */}
         <div className="p-4 border-t border-[#A50010]">
-          <div className="flex items-center gap-3 mb-3 p-3 bg-white/10 rounded-lg">
-            <div className="size-10 bg-white rounded-full flex items-center justify-center">
-              <User className="size-6 text-[#DB0011]" />
-            </div>
-            <div className="flex-1">
-              <p className="text-white text-sm">{userSession.username}</p>
-              <div className="flex items-center gap-1 mt-1">
-                <Shield className="size-3 text-white/70" />
-                <p className="text-white/70 text-xs">{userSession.role}</p>
-              </div>
-              {userSession.region && (
-                <div className="flex items-center gap-1 mt-0.5">
-                  <MapPin className="size-3 text-white/70" />
-                  <p className="text-white/70 text-xs">{userSession.region}</p>
-                </div>
-              )}
-            </div>
-          </div>
-          <Button
-            onClick={handleLogout}
-            variant="outline"
-            className="w-full bg-transparent border-white text-white hover:bg-white hover:text-[#DB0011]"
-          >
-            <LogOut className="size-4 mr-2" />
-            Logout
-          </Button>
+          <p className="text-xs text-white/60 text-center">Platform Migration</p>
         </div>
       </aside>
 
       {/* Main Content */}
       <main className="flex-1 bg-slate-50">
-        {/* Header with logged-in user */}
+        {/* Header with logged-in user and logout */}
         <header className="bg-white border-b border-slate-200 px-8 py-4">
           <div className="flex items-center justify-between">
             <div>
@@ -150,33 +133,62 @@ export default function App() {
                 })}
               </p>
             </div>
-            <div className="flex items-center gap-3 px-4 py-2 bg-slate-50 rounded-lg border border-slate-200">
-              <div className="size-8 bg-[#DB0011] rounded-full flex items-center justify-center">
-                <User className="size-5 text-white" />
-              </div>
-              <div>
-                <p className="text-slate-900 text-sm">{userSession.username}</p>
-                <div className="flex items-center gap-2">
-                  <Badge variant="outline" className="text-xs px-2 py-0">
-                    {userSession.role}
-                  </Badge>
+            
+            {/* User Menu with Logout */}
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="ghost" className="flex items-center gap-3 px-4 py-2 hover:bg-slate-50">
+                  <div className="size-8 bg-[#DB0011] rounded-full flex items-center justify-center">
+                    <User className="size-5 text-white" />
+                  </div>
+                  <div className="text-left">
+                    <p className="text-slate-900 text-sm">{userSession.username}</p>
+                    <div className="flex items-center gap-2 mt-0.5">
+                      <Badge variant="outline" className="text-xs px-2 py-0">
+                        {userSession.role}
+                      </Badge>
+                      {userSession.region && (
+                        <Badge variant="outline" className="text-xs px-2 py-0 bg-blue-50 text-blue-700 border-blue-200">
+                          {userSession.region}
+                        </Badge>
+                      )}
+                    </div>
+                  </div>
+                  <ChevronDown className="size-4 text-slate-400" />
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end" className="w-56">
+                <DropdownMenuLabel>My Account</DropdownMenuLabel>
+                <DropdownMenuSeparator />
+                <div className="px-2 py-2">
+                  <p className="text-sm text-slate-900">{userSession.username}</p>
+                  <div className="flex items-center gap-1 mt-1">
+                    <Shield className="size-3 text-slate-500" />
+                    <p className="text-xs text-slate-500">{userSession.role}</p>
+                  </div>
                   {userSession.region && (
-                    <Badge variant="outline" className="text-xs px-2 py-0 bg-blue-50 text-blue-700 border-blue-200">
-                      {userSession.region}
-                    </Badge>
+                    <div className="flex items-center gap-1 mt-0.5">
+                      <MapPin className="size-3 text-slate-500" />
+                      <p className="text-xs text-slate-500">{userSession.region}</p>
+                    </div>
                   )}
                 </div>
-              </div>
-            </div>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem onClick={handleLogout} className="text-[#DB0011] cursor-pointer">
+                  <LogOut className="size-4 mr-2" />
+                  Logout
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
           </div>
         </header>
 
         {/* Content Area */}
         <div className="p-8">
+          {activeView === 'phases' && <PhaseCreation userSession={userSession} />}
           {activeView === 'inventory' && <VMInventory userSession={userSession} />}
           {activeView === 'categories' && <CategoryManagement userSession={userSession} />}
           {activeView === 'leads' && <LeadAssignment />}
-          {activeView === 'phases' && <PhaseCreation userSession={userSession} />}
           {activeView === 'reports' && <MigrationReports userSession={userSession} />}
         </div>
       </main>

@@ -1,13 +1,15 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from './ui/card';
 import { Button } from './ui/button';
 import { Input } from './ui/input';
 import { Label } from './ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from './ui/select';
+import { Textarea } from './ui/textarea';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from './ui/table';
 import { Badge } from './ui/badge';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from './ui/dialog';
-import { UserPlus, Edit2, Users } from 'lucide-react';
+import { UserPlus, Edit2, Users, Wrench, Search } from 'lucide-react';
+import { LoadingSpinner } from './LoadingSpinner';
 
 interface RegionLead {
   id: string;
@@ -16,6 +18,7 @@ interface RegionLead {
   primaryEmail: string;
   secondaryLead: string;
   secondaryEmail: string;
+  engineers: string;
   assignedDate: string;
 }
 
@@ -27,6 +30,7 @@ const initialLeads: RegionLead[] = [
     primaryEmail: 'john.doe@hsbc.com',
     secondaryLead: 'Sarah Johnson',
     secondaryEmail: 'sarah.johnson@hsbc.com',
+    engineers: 'Mike Wilson, Tom Anderson, Lisa White',
     assignedDate: '2025-11-01'
   },
   {
@@ -36,6 +40,7 @@ const initialLeads: RegionLead[] = [
     primaryEmail: 'jane.smith@hsbc.com',
     secondaryLead: 'Mike Wilson',
     secondaryEmail: 'mike.wilson@hsbc.com',
+    engineers: 'Chris Brown, Amy Davis',
     assignedDate: '2025-11-01'
   },
   {
@@ -45,6 +50,7 @@ const initialLeads: RegionLead[] = [
     primaryEmail: 'michael.brown@hsbc.com',
     secondaryLead: 'Emma Davis',
     secondaryEmail: 'emma.davis@hsbc.com',
+    engineers: 'David Miller, Sophie Turner, Alex Johnson',
     assignedDate: '2025-11-02'
   },
   {
@@ -54,6 +60,7 @@ const initialLeads: RegionLead[] = [
     primaryEmail: 'lisa.chen@hsbc.com',
     secondaryLead: 'David Lee',
     secondaryEmail: 'david.lee@hsbc.com',
+    engineers: 'Kevin Wang, Anna Zhang',
     assignedDate: '2025-11-03'
   }
 ];
@@ -70,7 +77,8 @@ export function LeadAssignment() {
     primaryLead: '',
     primaryEmail: '',
     secondaryLead: '',
-    secondaryEmail: ''
+    secondaryEmail: '',
+    engineers: ''
   });
 
   const handleEdit = (lead: RegionLead) => {
@@ -80,7 +88,8 @@ export function LeadAssignment() {
       primaryLead: lead.primaryLead,
       primaryEmail: lead.primaryEmail,
       secondaryLead: lead.secondaryLead,
-      secondaryEmail: lead.secondaryEmail
+      secondaryEmail: lead.secondaryEmail,
+      engineers: lead.engineers
     });
     setIsEditing(true);
   };
@@ -106,6 +115,7 @@ export function LeadAssignment() {
       primaryEmail: formData.primaryEmail,
       secondaryLead: formData.secondaryLead,
       secondaryEmail: formData.secondaryEmail,
+      engineers: formData.engineers,
       assignedDate: new Date().toISOString().split('T')[0]
     };
     setLeads([...leads, newLead]);
@@ -119,7 +129,8 @@ export function LeadAssignment() {
       primaryLead: '',
       primaryEmail: '',
       secondaryLead: '',
-      secondaryEmail: ''
+      secondaryEmail: '',
+      engineers: ''
     });
   };
 
@@ -132,9 +143,9 @@ export function LeadAssignment() {
         <CardHeader>
           <div className="flex items-center justify-between">
             <div>
-              <CardTitle className="text-[#DB0011]">Regional Lead Assignment</CardTitle>
+              <CardTitle className="text-[#DB0011]">Regional Team Assignment</CardTitle>
               <CardDescription className="text-slate-600">
-                Manage primary and secondary leads for each migration region
+                Manage primary leads, secondary leads, and migration engineers for each region
               </CardDescription>
             </div>
             <Dialog open={isAdding} onOpenChange={setIsAdding}>
@@ -146,9 +157,9 @@ export function LeadAssignment() {
               </DialogTrigger>
               <DialogContent className="max-w-2xl">
                 <DialogHeader>
-                  <DialogTitle className="text-[#DB0011]">Assign Regional Leads</DialogTitle>
+                  <DialogTitle className="text-[#DB0011]">Assign Regional Team</DialogTitle>
                   <DialogDescription className="text-slate-600">
-                    Assign primary and secondary leads for a region
+                    Assign primary lead, secondary lead, and engineers for a region
                   </DialogDescription>
                 </DialogHeader>
                 <div className="space-y-4 py-4">
@@ -209,13 +220,25 @@ export function LeadAssignment() {
                       />
                     </div>
                   </div>
+
+                  <div className="space-y-2">
+                    <Label htmlFor="add-engineers" className="text-slate-900">Migration Engineers</Label>
+                    <Textarea
+                      id="add-engineers"
+                      placeholder="Enter engineer names separated by commas (e.g., Mike Wilson, Tom Anderson, Lisa White)"
+                      value={formData.engineers}
+                      onChange={(e) => setFormData({ ...formData, engineers: e.target.value })}
+                      rows={3}
+                    />
+                    <p className="text-xs text-slate-500">Separate multiple engineer names with commas</p>
+                  </div>
                 </div>
                 <DialogFooter>
                   <Button variant="outline" onClick={() => { setIsAdding(false); resetForm(); }}>
                     Cancel
                   </Button>
                   <Button onClick={handleAddNew} className="bg-[#DB0011] hover:bg-[#A50010]">
-                    Assign Leads
+                    Assign Team
                   </Button>
                 </DialogFooter>
               </DialogContent>
@@ -229,9 +252,8 @@ export function LeadAssignment() {
                 <TableRow>
                   <TableHead className="text-[#DB0011]">Region</TableHead>
                   <TableHead className="text-[#DB0011]">Primary Lead</TableHead>
-                  <TableHead className="text-[#DB0011]">Primary Email</TableHead>
                   <TableHead className="text-[#DB0011]">Secondary Lead</TableHead>
-                  <TableHead className="text-[#DB0011]">Secondary Email</TableHead>
+                  <TableHead className="text-[#DB0011]">Migration Engineers</TableHead>
                   <TableHead className="text-[#DB0011]">Assigned Date</TableHead>
                   <TableHead className="text-[#DB0011]">Actions</TableHead>
                 </TableRow>
@@ -244,20 +266,34 @@ export function LeadAssignment() {
                         {lead.region}
                       </Badge>
                     </TableCell>
-                    <TableCell className="text-slate-900">
-                      <div className="flex items-center gap-2">
-                        <Users className="size-4 text-[#DB0011]" />
-                        {lead.primaryLead}
+                    <TableCell>
+                      <div className="space-y-1">
+                        <div className="flex items-center gap-2">
+                          <Users className="size-4 text-[#DB0011]" />
+                          <span className="text-slate-900">{lead.primaryLead}</span>
+                        </div>
+                        <p className="text-xs text-slate-500 ml-6">{lead.primaryEmail}</p>
                       </div>
                     </TableCell>
-                    <TableCell className="text-slate-700">{lead.primaryEmail}</TableCell>
-                    <TableCell className="text-slate-900">
-                      <div className="flex items-center gap-2">
-                        <Users className="size-4 text-slate-400" />
-                        {lead.secondaryLead}
+                    <TableCell>
+                      <div className="space-y-1">
+                        <div className="flex items-center gap-2">
+                          <Users className="size-4 text-slate-400" />
+                          <span className="text-slate-900">{lead.secondaryLead}</span>
+                        </div>
+                        <p className="text-xs text-slate-500 ml-6">{lead.secondaryEmail}</p>
                       </div>
                     </TableCell>
-                    <TableCell className="text-slate-700">{lead.secondaryEmail}</TableCell>
+                    <TableCell>
+                      <div className="flex flex-wrap gap-1">
+                        {lead.engineers.split(',').map((engineer, idx) => (
+                          <Badge key={idx} variant="outline" className="bg-green-50 text-green-700 border-green-200 text-xs">
+                            <Wrench className="size-3 mr-1" />
+                            {engineer.trim()}
+                          </Badge>
+                        ))}
+                      </div>
+                    </TableCell>
                     <TableCell className="text-slate-600">{lead.assignedDate}</TableCell>
                     <TableCell>
                       <Button
@@ -282,9 +318,9 @@ export function LeadAssignment() {
       <Dialog open={isEditing} onOpenChange={setIsEditing}>
         <DialogContent className="max-w-2xl">
           <DialogHeader>
-            <DialogTitle className="text-[#DB0011]">Edit Regional Leads</DialogTitle>
+            <DialogTitle className="text-[#DB0011]">Edit Regional Team</DialogTitle>
             <DialogDescription className="text-slate-600">
-              Update primary and secondary leads for {formData.region}
+              Update primary lead, secondary lead, and engineers for {formData.region}
             </DialogDescription>
           </DialogHeader>
           <div className="space-y-4 py-4">
@@ -326,6 +362,17 @@ export function LeadAssignment() {
                   onChange={(e) => setFormData({ ...formData, secondaryEmail: e.target.value })}
                 />
               </div>
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="edit-engineers" className="text-slate-900">Migration Engineers</Label>
+              <Textarea
+                id="edit-engineers"
+                value={formData.engineers}
+                onChange={(e) => setFormData({ ...formData, engineers: e.target.value })}
+                rows={3}
+              />
+              <p className="text-xs text-slate-500">Separate multiple engineer names with commas</p>
             </div>
           </div>
           <DialogFooter>

@@ -65,7 +65,7 @@ export function Login({ onLogin }: LoginProps) {
           </div>
           <h1 className="text-white mb-2">MiOA</h1>
           <p className="text-white/90">Migration Orchestration & Automation</p>
-          <p className="text-white/80 text-sm mt-1">VMware to OpenShift Migration</p>
+          <p className="text-white/80 text-sm mt-1">Platform Migration</p>
         </div>
 
         {/* Login Card */}

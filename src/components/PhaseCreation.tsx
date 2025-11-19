@@ -1,4 +1,4 @@
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from './ui/card';
 import { Button } from './ui/button';
 import { Input } from './ui/input';
@@ -10,6 +10,7 @@ import { Calendar, Plus, ChevronRight, ChevronLeft, X, Filter, Search, Play } fr
 import { DndProvider, useDrag, useDrop } from 'react-dnd';
 import { HTML5Backend } from 'react-dnd-html5-backend';
 import { MigrationProgress } from './MigrationProgress';
+import { LoadingSpinner } from './LoadingSpinner';
 
 interface UserSession {
   username: string;
