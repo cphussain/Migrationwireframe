@@ -6,6 +6,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '.
 import { Badge } from './ui/badge';
 import { Search } from 'lucide-react';
 import { LoadingSpinner } from './LoadingSpinner';
+import { getCategories, type Category } from '../data/mockApi';
 
 interface UserSession {
   username: string;
@@ -15,21 +16,6 @@ interface UserSession {
 
 interface CategoryManagementProps {
   userSession: UserSession;
-}
-
-interface Category {
-  migrationType: string;
-  category: string;
-  criticality: string;
-  environment: string;
-  site: string;
-  vm: string;
-  cluster: string;
-  rdm: string;
-  application: string;
-  vmSize: string;
-  replication: string;
-  role: string;
 }
 
 const categoryData: Category[] = [
@@ -111,11 +97,13 @@ export function CategoryManagement({ userSession }: CategoryManagementProps) {
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    // Simulate loading data
-    setTimeout(() => {
-      setCategories(categoryData);
+    const fetchCategories = async () => {
+      setIsLoading(true);
+      const data = await getCategories();
+      setCategories(data);
       setIsLoading(false);
-    }, 1500);
+    };
+    fetchCategories();
   }, []);
 
   const filteredCategories = categories.filter(cat => 

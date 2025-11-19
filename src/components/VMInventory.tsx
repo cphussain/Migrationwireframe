@@ -8,6 +8,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '.
 import { Button } from './ui/button';
 import { Search, Filter, X } from 'lucide-react';
 import { LoadingSpinner } from './LoadingSpinner';
+import { getVMInventory, type VM } from '../data/mockApi';
 
 interface UserSession {
   username: string;
@@ -19,41 +20,25 @@ interface VMInventoryProps {
   userSession: UserSession;
 }
 
-// Mock VM data generator for 100k VMs
-const generateVMs = () => {
-  const vms = [];
-  const regions = ['US-East', 'US-West', 'EU-Central', 'APAC', 'EU-West', 'US-Central', 'APAC-South', 'EU-North'];
-  const categories = ['C1', 'C2', 'Unassigned'];
-  const services = [
-    'Payment Gateway', 'Customer Portal', 'Trading Platform', 'Mobile Banking', 
-    'Core Banking', 'Analytics Service', 'Risk Management', 'Loan Processing',
-    'ATM Network', 'Card Services', 'Wealth Management', 'Treasury System',
-    'Compliance System', 'HR Portal', 'Email Service', 'File Server'
-  ];
-
-  for (let i = 1; i <= 100000; i++) {
-    vms.push({
-      name: `VM-${String(i).padStart(6, '0')}`,
-      serviceName: services[Math.floor(Math.random() * services.length)],
-      region: regions[Math.floor(Math.random() * regions.length)],
-      category: categories[Math.floor(Math.random() * categories.length)],
-      cpu: Math.floor(Math.random() * 16) + 2,
-      memory: Math.floor(Math.random() * 64) + 8,
-      storage: Math.floor(Math.random() * 500) + 100,
-      phase: Math.random() > 0.5 ? `Phase ${Math.floor(Math.random() * 5) + 1}` : '-',
-    });
-  }
-  return vms;
-};
-
 export function VMInventory({ userSession }: VMInventoryProps) {
-  const [vms] = useState(() => generateVMs());
+  const [vms, setVMs] = useState<VM[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
   const [regionFilter, setRegionFilter] = useState('all');
   const [serviceFilter, setServiceFilter] = useState('all');
   const [categoryFilter, setCategoryFilter] = useState('all');
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 50;
+
+  useEffect(() => {
+    const fetchVMs = async () => {
+      setIsLoading(true);
+      const data = await getVMInventory();
+      setVMs(data);
+      setIsLoading(false);
+    };
+    fetchVMs();
+  }, []);
 
   // Get unique values for filters
   const uniqueRegions = useMemo(() => {
@@ -236,7 +221,13 @@ export function VMInventory({ userSession }: VMInventoryProps) {
               </TableRow>
             </TableHeader>
             <TableBody>
-              {paginatedVMs.map((vm, index) => (
+              {isLoading ? (
+                <TableRow>
+                  <TableCell colSpan={8} className="text-center py-4">
+                    <LoadingSpinner />
+                  </TableCell>
+                </TableRow>
+              ) : paginatedVMs.map((vm, index) => (
                 <TableRow key={`${vm.name}-${index}`}>
                   <TableCell className="text-slate-900">{vm.name}</TableCell>
                   <TableCell className="text-slate-900">{vm.serviceName}</TableCell>

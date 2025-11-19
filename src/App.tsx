@@ -5,6 +5,7 @@ import { CategoryManagement } from './components/CategoryManagement';
 import { PhaseCreation } from './components/PhaseCreation';
 import { MigrationReports } from './components/MigrationReports';
 import { LeadAssignment } from './components/LeadAssignment';
+import { AIAssistant } from './components/AIAssistant';
 import { Server, Tags, GitBranch, BarChart3, ArrowRight, Users, LogOut, User, Shield, MapPin, ChevronDown } from 'lucide-react';
 import { Button } from './components/ui/button';
 import { Badge } from './components/ui/badge';
@@ -16,6 +17,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from './components/ui/dropdown-menu';
+import { getVMInventory, getPhases, getCategories } from './data/mockApi';
 
 interface UserSession {
   username: string;
@@ -174,7 +176,10 @@ export default function App() {
                   )}
                 </div>
                 <DropdownMenuSeparator />
-                <DropdownMenuItem onClick={handleLogout} className="text-[#DB0011] cursor-pointer">
+                <DropdownMenuItem 
+                  onClick={handleLogout}
+                  className="text-[#DB0011] cursor-pointer"
+                >
                   <LogOut className="size-4 mr-2" />
                   Logout
                 </DropdownMenuItem>
@@ -192,6 +197,9 @@ export default function App() {
           {activeView === 'reports' && <MigrationReports userSession={userSession} />}
         </div>
       </main>
+      
+      {/* AI Assistant - Floating Button */}
+      <AIAssistant userRole={userSession.role} userRegion={userSession.region} />
     </div>
   );
 }

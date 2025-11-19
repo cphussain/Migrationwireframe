@@ -10,65 +10,12 @@ import { Badge } from './ui/badge';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from './ui/dialog';
 import { UserPlus, Edit2, Users, Wrench, Search } from 'lucide-react';
 import { LoadingSpinner } from './LoadingSpinner';
-
-interface RegionLead {
-  id: string;
-  region: string;
-  primaryLead: string;
-  primaryEmail: string;
-  secondaryLead: string;
-  secondaryEmail: string;
-  engineers: string;
-  assignedDate: string;
-}
-
-const initialLeads: RegionLead[] = [
-  {
-    id: '1',
-    region: 'US-East',
-    primaryLead: 'John Doe',
-    primaryEmail: 'john.doe@hsbc.com',
-    secondaryLead: 'Sarah Johnson',
-    secondaryEmail: 'sarah.johnson@hsbc.com',
-    engineers: 'Mike Wilson, Tom Anderson, Lisa White',
-    assignedDate: '2025-11-01'
-  },
-  {
-    id: '2',
-    region: 'US-West',
-    primaryLead: 'Jane Smith',
-    primaryEmail: 'jane.smith@hsbc.com',
-    secondaryLead: 'Mike Wilson',
-    secondaryEmail: 'mike.wilson@hsbc.com',
-    engineers: 'Chris Brown, Amy Davis',
-    assignedDate: '2025-11-01'
-  },
-  {
-    id: '3',
-    region: 'EU-Central',
-    primaryLead: 'Michael Brown',
-    primaryEmail: 'michael.brown@hsbc.com',
-    secondaryLead: 'Emma Davis',
-    secondaryEmail: 'emma.davis@hsbc.com',
-    engineers: 'David Miller, Sophie Turner, Alex Johnson',
-    assignedDate: '2025-11-02'
-  },
-  {
-    id: '4',
-    region: 'APAC',
-    primaryLead: 'Lisa Chen',
-    primaryEmail: 'lisa.chen@hsbc.com',
-    secondaryLead: 'David Lee',
-    secondaryEmail: 'david.lee@hsbc.com',
-    engineers: 'Kevin Wang, Anna Zhang',
-    assignedDate: '2025-11-03'
-  }
-];
+import { getRegionalLeads, type RegionLead } from '../data/mockApi';
 
 const allRegions = ['US-East', 'US-West', 'EU-Central', 'APAC', 'EU-West', 'US-Central', 'APAC-South', 'EU-North'];
 
 export function LeadAssignment() {
-  const [leads, setLeads] = useState<RegionLead[]>(initialLeads);
+  const [leads, setLeads] = useState<RegionLead[]>([]);
   const [isEditing, setIsEditing] = useState(false);
   const [isAdding, setIsAdding] = useState(false);
   const [editingLead, setEditingLead] = useState<RegionLead | null>(null);
@@ -80,6 +27,14 @@ export function LeadAssignment() {
     secondaryEmail: '',
     engineers: ''
   });
+
+  useEffect(() => {
+    const fetchLeads = async () => {
+      const data = await getRegionalLeads();
+      setLeads(data);
+    };
+    fetchLeads();
+  }, []);
 
   const handleEdit = (lead: RegionLead) => {
     setEditingLead(lead);

@@ -1,4 +1,4 @@
-import { useState, useMemo, useEffect } from 'react';
+import { useState, useMemo } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from './ui/card';
 import { Button } from './ui/button';
 import { Input } from './ui/input';
@@ -6,11 +6,14 @@ import { Label } from './ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from './ui/select';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from './ui/table';
 import { Badge } from './ui/badge';
-import { Calendar, Plus, ChevronRight, ChevronLeft, X, Filter, Search, Play } from 'lucide-react';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from './ui/tabs';
+import { Calendar, Plus, ChevronRight, ChevronLeft, X, Filter, Search, Play, Sparkles } from 'lucide-react';
 import { DndProvider, useDrag, useDrop } from 'react-dnd';
 import { HTML5Backend } from 'react-dnd-html5-backend';
 import { MigrationProgress } from './MigrationProgress';
 import { LoadingSpinner } from './LoadingSpinner';
+import { SmartRecommendations } from './SmartRecommendations';
+import { type RecommendedPhase } from '../services/migrationRecommendations';
 
 interface UserSession {
   username: string;
@@ -191,6 +194,7 @@ export function PhaseCreation({ userSession }: PhaseCreationProps) {
   const [assignedTo, setAssignedTo] = useState('');
   const [selectedVMs, setSelectedVMs] = useState<VM[]>([]);
   const [searchAvailable, setSearchAvailable] = useState('');
+  const [activeTab, setActiveTab] = useState('phases');
 
   // Filters for existing phases
   const [filterRegion, setFilterRegion] = useState('all');
@@ -348,379 +352,405 @@ export function PhaseCreation({ userSession }: PhaseCreationProps) {
   // Check if user can start migration based on role
   const canStartMigration = userSession.role === 'Administrator' || userSession.role === 'Migration Engineer';
 
+  // Smart Recommendations
+  const handleUseRecommendation = (recPhase: RecommendedPhase) => {
+    // Pre-fill the form with recommended phase data
+    setPhaseName(recPhase.name);
+    setSelectedRegion(recPhase.region);
+    setSelectedCategory(recPhase.category);
+    setChangeRequest(`CHG${String(Math.floor(Math.random() * 1000000)).padStart(7, '0')}`);
+    setAssignedTo(userSession.username);
+    setSelectedVMs(recPhase.vms);
+    setShowForm(true);
+  };
+
   return (
     <DndProvider backend={HTML5Backend}>
-      <div className="space-y-6">
-        <Card>
-          <CardHeader>
-            <div className="flex items-center justify-between">
-              <div>
-                <CardTitle className="text-[#DB0011]">Create Migration Phase</CardTitle>
-                <CardDescription className="text-slate-600">
-                  Select region and category to shortlist VMs and create a migration phase
-                </CardDescription>
-              </div>
-              <Button onClick={() => setShowForm(!showForm)} className="bg-[#DB0011] hover:bg-[#A50010]">
-                <Plus className="size-4 mr-2" />
-                New Phase
-              </Button>
-            </div>
-          </CardHeader>
-          {showForm && (
-            <CardContent className="space-y-6 border-t pt-6">
-              {/* Phase Details */}
-              <div className="grid grid-cols-2 gap-4">
-                <div className="space-y-2">
-                  <Label htmlFor="phase-name" className="text-slate-900">Phase Name</Label>
-                  <Input
-                    id="phase-name"
-                    placeholder="e.g., Phase 3 - APAC Migration"
-                    value={phaseName}
-                    onChange={(e) => setPhaseName(e.target.value)}
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="change-request" className="text-slate-900">Change Request ID</Label>
-                  <Input
-                    id="change-request"
-                    placeholder="e.g., CHG0001236"
-                    value={changeRequest}
-                    onChange={(e) => setChangeRequest(e.target.value)}
-                  />
-                </div>
-              </div>
+      <Tabs defaultValue="phases" className="space-y-6">
+        <TabsList className="grid w-full max-w-md grid-cols-2">
+          <TabsTrigger value="phases">Manual Phase Creation</TabsTrigger>
+          <TabsTrigger value="smart" className="flex items-center gap-2">
+            <Sparkles className="size-4" />
+            Smart Recommendations
+          </TabsTrigger>
+        </TabsList>
 
-              {/* Filters */}
-              <div className="grid grid-cols-3 gap-4">
-                <div className="space-y-2">
-                  <Label htmlFor="region" className="text-slate-900">Region</Label>
-                  <Select value={selectedRegion} onValueChange={setSelectedRegion}>
-                    <SelectTrigger id="region">
-                      <SelectValue placeholder="Select region" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="US-East">US-East</SelectItem>
-                      <SelectItem value="US-West">US-West</SelectItem>
-                      <SelectItem value="EU-Central">EU-Central</SelectItem>
-                      <SelectItem value="APAC">APAC</SelectItem>
-                    </SelectContent>
-                  </Select>
+        <TabsContent value="phases" className="space-y-6">
+          <Card>
+            <CardHeader>
+              <div className="flex items-center justify-between">
+                <div>
+                  <CardTitle className="text-[#DB0011]">Create Migration Phase</CardTitle>
+                  <CardDescription className="text-slate-600">
+                    Select region and category to shortlist VMs and create a migration phase
+                  </CardDescription>
                 </div>
-                <div className="space-y-2">
-                  <Label htmlFor="category" className="text-slate-900">Category</Label>
-                  <Select value={selectedCategory} onValueChange={setSelectedCategory}>
-                    <SelectTrigger id="category">
-                      <SelectValue placeholder="Select category" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="C1">C1 - Low Complexity</SelectItem>
-                      <SelectItem value="C2">C2 - Medium Complexity</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="assigned-to" className="text-slate-900">Assigned To</Label>
-                  <Input
-                    id="assigned-to"
-                    placeholder="e.g., John Doe"
-                    value={assignedTo}
-                    onChange={(e) => setAssignedTo(e.target.value)}
-                  />
-                </div>
-              </div>
-
-              {/* VM Selection Grid */}
-              {selectedRegion && selectedCategory && (
-                <div className="space-y-4">
-                  <div className="flex items-center justify-between">
-                    <Label className="text-slate-900">Select VMs for Migration Phase</Label>
-                    <div className="flex gap-2">
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={handleAddAll}
-                        disabled={availableVMs.length === 0}
-                      >
-                        Add First 50
-                      </Button>
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={handleRemoveAll}
-                        disabled={selectedVMs.length === 0}
-                      >
-                        Remove All
-                      </Button>
-                    </div>
-                  </div>
-
-                  <div className="grid grid-cols-2 gap-4">
-                    {/* Available VMs */}
-                    <div className="space-y-3">
-                      <div className="flex items-center justify-between">
-                        <Label className="text-slate-900">Available VMs ({availableVMs.length})</Label>
-                        <Input
-                          placeholder="Search..."
-                          value={searchAvailable}
-                          onChange={(e) => setSearchAvailable(e.target.value)}
-                          className="w-48 h-8"
-                        />
-                      </div>
-                      <DropZone onDrop={handleRemoveVM}>
-                        <div className="space-y-2">
-                          {availableVMs.length === 0 ? (
-                            <p className="text-center text-slate-500 py-8">
-                              No VMs available with selected filters
-                            </p>
-                          ) : (
-                            availableVMs.slice(0, 20).map((vm) => (
-                              <DraggableVMItem
-                                key={vm.name}
-                                vm={vm}
-                                onSelect={() => handleAddVM(vm)}
-                              />
-                            ))
-                          )}
-                          {availableVMs.length > 20 && (
-                            <p className="text-sm text-slate-500 text-center py-2">
-                              Showing 20 of {availableVMs.length} VMs
-                            </p>
-                          )}
-                        </div>
-                      </DropZone>
-                    </div>
-
-                    {/* Selected VMs */}
-                    <div className="space-y-3">
-                      <Label className="text-slate-900">Selected VMs ({selectedVMs.length})</Label>
-                      <DropZone onDrop={handleAddVM}>
-                        <div className="space-y-2">
-                          {selectedVMs.length === 0 ? (
-                            <p className="text-center text-slate-500 py-8">
-                              Drag VMs here or click the arrow to add
-                            </p>
-                          ) : (
-                            selectedVMs.map((vm) => (
-                              <SelectedVMItem
-                                key={vm.name}
-                                vm={vm}
-                                onRemove={() => handleRemoveVM(vm.name)}
-                              />
-                            ))
-                          )}
-                        </div>
-                      </DropZone>
-                    </div>
-                  </div>
-                </div>
-              )}
-
-              {/* Action Buttons */}
-              <div className="flex gap-3 pt-4">
-                <Button onClick={handleCreatePhase} className="bg-[#DB0011] hover:bg-[#A50010]">
-                  <Calendar className="size-4 mr-2" />
-                  Create Phase
-                </Button>
-                <Button variant="outline" onClick={() => { setShowForm(false); resetForm(); }}>
-                  Cancel
+                <Button onClick={() => setShowForm(!showForm)} className="bg-[#DB0011] hover:bg-[#A50010]">
+                  <Plus className="size-4 mr-2" />
+                  New Phase
                 </Button>
               </div>
-            </CardContent>
-          )}
-        </Card>
-
-        {/* Existing Phases Table */}
-        <Card>
-          <CardHeader>
-            <CardTitle className="text-[#DB0011]">Existing Migration Phases</CardTitle>
-            <CardDescription className="text-slate-600">
-              Search and filter migration phases ({filteredPhases.length} of {phases.length} phases)
-            </CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            {/* Phase Filters */}
-            <div className="space-y-4 p-4 bg-slate-50 rounded-lg border">
-              <div className="flex items-center gap-2 mb-3">
-                <Filter className="size-5 text-[#DB0011]" />
-                <span className="text-slate-900">Filter Phases</span>
-                {hasActivePhaseFilters && (
-                  <Button 
-                    variant="ghost" 
-                    size="sm" 
-                    onClick={clearPhaseFilters}
-                    className="ml-auto text-[#DB0011] hover:bg-[#FEF0F1]"
-                  >
-                    <X className="size-4 mr-1" />
-                    Clear Filters
-                  </Button>
-                )}
-              </div>
-
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
-                {/* Search */}
-                <div className="space-y-2">
-                  <Label htmlFor="phase-search" className="text-slate-900">Search Phase</Label>
-                  <div className="relative">
-                    <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 size-4 text-slate-400" />
+            </CardHeader>
+            {showForm && (
+              <CardContent className="space-y-6 border-t pt-6">
+                {/* Phase Details */}
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="phase-name" className="text-slate-900">Phase Name</Label>
                     <Input
-                      id="phase-search"
-                      placeholder="Phase name or ID..."
-                      value={phaseSearchTerm}
-                      onChange={(e) => setPhaseSearchTerm(e.target.value)}
-                      className="pl-10"
+                      id="phase-name"
+                      placeholder="e.g., Phase 3 - APAC Migration"
+                      value={phaseName}
+                      onChange={(e) => setPhaseName(e.target.value)}
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="change-request" className="text-slate-900">Change Request ID</Label>
+                    <Input
+                      id="change-request"
+                      placeholder="e.g., CHG0001236"
+                      value={changeRequest}
+                      onChange={(e) => setChangeRequest(e.target.value)}
                     />
                   </div>
                 </div>
 
-                {/* Region Filter */}
-                <div className="space-y-2">
-                  <Label htmlFor="filter-region" className="text-slate-900">Region</Label>
-                  <Select value={filterRegion} onValueChange={setFilterRegion}>
-                    <SelectTrigger id="filter-region">
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="all">All Regions</SelectItem>
-                      {uniquePhaseRegions.map(region => (
-                        <SelectItem key={region} value={region}>{region}</SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
+                {/* Filters */}
+                <div className="grid grid-cols-3 gap-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="region" className="text-slate-900">Region</Label>
+                    <Select value={selectedRegion} onValueChange={setSelectedRegion}>
+                      <SelectTrigger id="region">
+                        <SelectValue placeholder="Select region" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="US-East">US-East</SelectItem>
+                        <SelectItem value="US-West">US-West</SelectItem>
+                        <SelectItem value="EU-Central">EU-Central</SelectItem>
+                        <SelectItem value="APAC">APAC</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="category" className="text-slate-900">Category</Label>
+                    <Select value={selectedCategory} onValueChange={setSelectedCategory}>
+                      <SelectTrigger id="category">
+                        <SelectValue placeholder="Select category" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="C1">C1 - Low Complexity</SelectItem>
+                        <SelectItem value="C2">C2 - Medium Complexity</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="assigned-to" className="text-slate-900">Assigned To</Label>
+                    <Input
+                      id="assigned-to"
+                      placeholder="e.g., John Doe"
+                      value={assignedTo}
+                      onChange={(e) => setAssignedTo(e.target.value)}
+                    />
+                  </div>
                 </div>
 
-                {/* Assigned To Filter */}
-                <div className="space-y-2">
-                  <Label htmlFor="filter-assigned" className="text-slate-900">Assigned To</Label>
-                  <Select value={filterAssignedTo} onValueChange={setFilterAssignedTo}>
-                    <SelectTrigger id="filter-assigned">
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="all">All Assignees</SelectItem>
-                      {uniqueAssignees.map(assignee => (
-                        <SelectItem key={assignee} value={assignee}>{assignee}</SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
+                {/* VM Selection Grid */}
+                {selectedRegion && selectedCategory && (
+                  <div className="space-y-4">
+                    <div className="flex items-center justify-between">
+                      <Label className="text-slate-900">Select VMs for Migration Phase</Label>
+                      <div className="flex gap-2">
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={handleAddAll}
+                          disabled={availableVMs.length === 0}
+                        >
+                          Add First 50
+                        </Button>
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={handleRemoveAll}
+                          disabled={selectedVMs.length === 0}
+                        >
+                          Remove All
+                        </Button>
+                      </div>
+                    </div>
+
+                    <div className="grid grid-cols-2 gap-4">
+                      {/* Available VMs */}
+                      <div className="space-y-3">
+                        <div className="flex items-center justify-between">
+                          <Label className="text-slate-900">Available VMs ({availableVMs.length})</Label>
+                          <Input
+                            placeholder="Search..."
+                            value={searchAvailable}
+                            onChange={(e) => setSearchAvailable(e.target.value)}
+                            className="w-48 h-8"
+                          />
+                        </div>
+                        <DropZone onDrop={handleRemoveVM}>
+                          <div className="space-y-2">
+                            {availableVMs.length === 0 ? (
+                              <p className="text-center text-slate-500 py-8">
+                                No VMs available with selected filters
+                              </p>
+                            ) : (
+                              availableVMs.slice(0, 20).map((vm) => (
+                                <DraggableVMItem
+                                  key={vm.name}
+                                  vm={vm}
+                                  onSelect={() => handleAddVM(vm)}
+                                />
+                              ))
+                            )}
+                            {availableVMs.length > 20 && (
+                              <p className="text-sm text-slate-500 text-center py-2">
+                                Showing 20 of {availableVMs.length} VMs
+                              </p>
+                            )}
+                          </div>
+                        </DropZone>
+                      </div>
+
+                      {/* Selected VMs */}
+                      <div className="space-y-3">
+                        <Label className="text-slate-900">Selected VMs ({selectedVMs.length})</Label>
+                        <DropZone onDrop={handleAddVM}>
+                          <div className="space-y-2">
+                            {selectedVMs.length === 0 ? (
+                              <p className="text-center text-slate-500 py-8">
+                                Drag VMs here or click the arrow to add
+                              </p>
+                            ) : (
+                              selectedVMs.map((vm) => (
+                                <SelectedVMItem
+                                  key={vm.name}
+                                  vm={vm}
+                                  onRemove={() => handleRemoveVM(vm.name)}
+                                />
+                              ))
+                            )}
+                          </div>
+                        </DropZone>
+                      </div>
+                    </div>
+                  </div>
+                )}
+
+                {/* Action Buttons */}
+                <div className="flex gap-3 pt-4">
+                  <Button onClick={handleCreatePhase} className="bg-[#DB0011] hover:bg-[#A50010]">
+                    <Calendar className="size-4 mr-2" />
+                    Create Phase
+                  </Button>
+                  <Button variant="outline" onClick={() => { setShowForm(false); resetForm(); }}>
+                    Cancel
+                  </Button>
+                </div>
+              </CardContent>
+            )}
+          </Card>
+
+          {/* Existing Phases Table */}
+          <Card>
+            <CardHeader>
+              <CardTitle className="text-[#DB0011]">Existing Migration Phases</CardTitle>
+              <CardDescription className="text-slate-600">
+                Search and filter migration phases ({filteredPhases.length} of {phases.length} phases)
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              {/* Phase Filters */}
+              <div className="space-y-4 p-4 bg-slate-50 rounded-lg border">
+                <div className="flex items-center gap-2 mb-3">
+                  <Filter className="size-5 text-[#DB0011]" />
+                  <span className="text-slate-900">Filter Phases</span>
+                  {hasActivePhaseFilters && (
+                    <Button 
+                      variant="ghost" 
+                      size="sm" 
+                      onClick={clearPhaseFilters}
+                      className="ml-auto text-[#DB0011] hover:bg-[#FEF0F1]"
+                    >
+                      <X className="size-4 mr-1" />
+                      Clear Filters
+                    </Button>
+                  )}
                 </div>
 
-                {/* Date From */}
-                <div className="space-y-2">
-                  <Label htmlFor="filter-date-from" className="text-slate-900">Date From</Label>
-                  <Input
-                    id="filter-date-from"
-                    type="date"
-                    value={filterDateFrom}
-                    onChange={(e) => setFilterDateFrom(e.target.value)}
-                  />
-                </div>
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
+                  {/* Search */}
+                  <div className="space-y-2">
+                    <Label htmlFor="phase-search" className="text-slate-900">Search Phase</Label>
+                    <div className="relative">
+                      <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 size-4 text-slate-400" />
+                      <Input
+                        id="phase-search"
+                        placeholder="Phase name or ID..."
+                        value={phaseSearchTerm}
+                        onChange={(e) => setPhaseSearchTerm(e.target.value)}
+                        className="pl-10"
+                      />
+                    </div>
+                  </div>
 
-                {/* Date To */}
-                <div className="space-y-2">
-                  <Label htmlFor="filter-date-to" className="text-slate-900">Date To</Label>
-                  <Input
-                    id="filter-date-to"
-                    type="date"
-                    value={filterDateTo}
-                    onChange={(e) => setFilterDateTo(e.target.value)}
-                  />
+                  {/* Region Filter */}
+                  <div className="space-y-2">
+                    <Label htmlFor="filter-region" className="text-slate-900">Region</Label>
+                    <Select value={filterRegion} onValueChange={setFilterRegion}>
+                      <SelectTrigger id="filter-region">
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="all">All Regions</SelectItem>
+                        {uniquePhaseRegions.map(region => (
+                          <SelectItem key={region} value={region}>{region}</SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+
+                  {/* Assigned To Filter */}
+                  <div className="space-y-2">
+                    <Label htmlFor="filter-assigned" className="text-slate-900">Assigned To</Label>
+                    <Select value={filterAssignedTo} onValueChange={setFilterAssignedTo}>
+                      <SelectTrigger id="filter-assigned">
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="all">All Assignees</SelectItem>
+                        {uniqueAssignees.map(assignee => (
+                          <SelectItem key={assignee} value={assignee}>{assignee}</SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+
+                  {/* Date From */}
+                  <div className="space-y-2">
+                    <Label htmlFor="filter-date-from" className="text-slate-900">Date From</Label>
+                    <Input
+                      id="filter-date-from"
+                      type="date"
+                      value={filterDateFrom}
+                      onChange={(e) => setFilterDateFrom(e.target.value)}
+                    />
+                  </div>
+
+                  {/* Date To */}
+                  <div className="space-y-2">
+                    <Label htmlFor="filter-date-to" className="text-slate-900">Date To</Label>
+                    <Input
+                      id="filter-date-to"
+                      type="date"
+                      value={filterDateTo}
+                      onChange={(e) => setFilterDateTo(e.target.value)}
+                    />
+                  </div>
                 </div>
               </div>
-            </div>
 
-            <div className="border rounded-lg">
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead className="text-[#DB0011]">Phase ID</TableHead>
-                    <TableHead className="text-[#DB0011]">Phase Name</TableHead>
-                    <TableHead className="text-[#DB0011]">Region</TableHead>
-                    <TableHead className="text-[#DB0011]">Category</TableHead>
-                    <TableHead className="text-[#DB0011]">Change Request</TableHead>
-                    <TableHead className="text-[#DB0011]">VMs</TableHead>
-                    <TableHead className="text-[#DB0011]">Assigned To</TableHead>
-                    <TableHead className="text-[#DB0011]">Created</TableHead>
-                    <TableHead className="text-[#DB0011]">Status</TableHead>
-                    {canStartMigration && <TableHead className="text-[#DB0011]">Actions</TableHead>}
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {filteredPhases.length === 0 ? (
+              <div className="border rounded-lg">
+                <Table>
+                  <TableHeader>
                     <TableRow>
-                      <TableCell colSpan={canStartMigration ? 10 : 9} className="text-center text-slate-500 py-8">
-                        No phases found matching the filters
-                      </TableCell>
+                      <TableHead className="text-[#DB0011]">Phase ID</TableHead>
+                      <TableHead className="text-[#DB0011]">Phase Name</TableHead>
+                      <TableHead className="text-[#DB0011]">Region</TableHead>
+                      <TableHead className="text-[#DB0011]">Category</TableHead>
+                      <TableHead className="text-[#DB0011]">Change Request</TableHead>
+                      <TableHead className="text-[#DB0011]">VMs</TableHead>
+                      <TableHead className="text-[#DB0011]">Assigned To</TableHead>
+                      <TableHead className="text-[#DB0011]">Created</TableHead>
+                      <TableHead className="text-[#DB0011]">Status</TableHead>
+                      {canStartMigration && <TableHead className="text-[#DB0011]">Actions</TableHead>}
                     </TableRow>
-                  ) : (
-                    filteredPhases.map((phase) => (
-                      <TableRow key={phase.id}>
-                        <TableCell className="text-slate-900">{phase.id}</TableCell>
-                        <TableCell className="text-slate-900">{phase.name}</TableCell>
-                        <TableCell>
-                          <Badge variant="outline" className="bg-blue-50 text-blue-700 border-blue-200">
-                            {phase.region}
-                          </Badge>
+                  </TableHeader>
+                  <TableBody>
+                    {filteredPhases.length === 0 ? (
+                      <TableRow>
+                        <TableCell colSpan={canStartMigration ? 10 : 9} className="text-center text-slate-500 py-8">
+                          No phases found matching the filters
                         </TableCell>
-                        <TableCell>
-                          <Badge variant="outline" className="text-slate-700">{phase.category}</Badge>
-                        </TableCell>
-                        <TableCell className="text-[#DB0011]">{phase.changeRequest}</TableCell>
-                        <TableCell className="text-slate-700">{phase.vmCount}</TableCell>
-                        <TableCell className="text-slate-700">{phase.assignedTo}</TableCell>
-                        <TableCell className="text-slate-600">{phase.createdDate}</TableCell>
-                        <TableCell className="text-slate-700">
-                          <Badge
-                            variant="outline"
-                            className={
-                              phase.status === 'planned' ? 'bg-gray-50 text-gray-700' :
-                              phase.status === 'migrating' ? 'bg-yellow-50 text-yellow-700' :
-                              'bg-green-50 text-green-700'
-                            }
-                          >
-                            {phase.status.charAt(0).toUpperCase() + phase.status.slice(1)}
-                          </Badge>
-                        </TableCell>
-                        {canStartMigration && (
-                          <TableCell>
-                            {phase.status === 'planned' && (
-                              <Button
-                                size="sm"
-                                onClick={() => handleStartMigration(phase)}
-                                className="bg-[#DB0011] hover:bg-[#A50010]"
-                              >
-                                <Play className="size-4 mr-2" />
-                                Start Migration
-                              </Button>
-                            )}
-                            {phase.status === 'migrating' && (
-                              <Button
-                                size="sm"
-                                variant="outline"
-                                onClick={() => {
-                                  setMigrationPhase(phase);
-                                  setShowMigrationProgress(true);
-                                }}
-                                className="text-yellow-700 border-yellow-300 hover:bg-yellow-50"
-                              >
-                                View Progress
-                              </Button>
-                            )}
-                            {phase.status === 'completed' && (
-                              <Badge variant="outline" className="bg-green-100 text-green-700">
-                                Completed
-                              </Badge>
-                            )}
-                          </TableCell>
-                        )}
                       </TableRow>
-                    ))
-                  )}
-                </TableBody>
-              </Table>
-            </div>
-          </CardContent>
-        </Card>
-      </div>
+                    ) : (
+                      filteredPhases.map((phase) => (
+                        <TableRow key={phase.id}>
+                          <TableCell className="text-slate-900">{phase.id}</TableCell>
+                          <TableCell className="text-slate-900">{phase.name}</TableCell>
+                          <TableCell>
+                            <Badge variant="outline" className="bg-blue-50 text-blue-700 border-blue-200">
+                              {phase.region}
+                            </Badge>
+                          </TableCell>
+                          <TableCell>
+                            <Badge variant="outline" className="text-slate-700">{phase.category}</Badge>
+                          </TableCell>
+                          <TableCell className="text-[#DB0011]">{phase.changeRequest}</TableCell>
+                          <TableCell className="text-slate-700">{phase.vmCount}</TableCell>
+                          <TableCell className="text-slate-700">{phase.assignedTo}</TableCell>
+                          <TableCell className="text-slate-600">{phase.createdDate}</TableCell>
+                          <TableCell className="text-slate-700">
+                            <Badge
+                              variant="outline"
+                              className={
+                                phase.status === 'planned' ? 'bg-gray-50 text-gray-700' :
+                                phase.status === 'migrating' ? 'bg-yellow-50 text-yellow-700' :
+                                'bg-green-50 text-green-700'
+                              }
+                            >
+                              {phase.status.charAt(0).toUpperCase() + phase.status.slice(1)}
+                            </Badge>
+                          </TableCell>
+                          {canStartMigration && (
+                            <TableCell>
+                              {phase.status === 'planned' && (
+                                <Button
+                                  size="sm"
+                                  onClick={() => handleStartMigration(phase)}
+                                  className="bg-[#DB0011] hover:bg-[#A50010]"
+                                >
+                                  <Play className="size-4 mr-2" />
+                                  Start Migration
+                                </Button>
+                              )}
+                              {phase.status === 'migrating' && (
+                                <Button
+                                  size="sm"
+                                  variant="outline"
+                                  onClick={() => {
+                                    setMigrationPhase(phase);
+                                    setShowMigrationProgress(true);
+                                  }}
+                                  className="text-yellow-700 border-yellow-300 hover:bg-yellow-50"
+                                >
+                                  View Progress
+                                </Button>
+                              )}
+                              {phase.status === 'completed' && (
+                                <Badge variant="outline" className="bg-green-100 text-green-700">
+                                  Completed
+                                </Badge>
+                              )}
+                            </TableCell>
+                          )}
+                        </TableRow>
+                      ))
+                    )}
+                  </TableBody>
+                </Table>
+              </div>
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+        <TabsContent value="smart" className="space-y-6">
+          <SmartRecommendations onAcceptPhase={handleUseRecommendation} />
+        </TabsContent>
+      </Tabs>
 
       {/* Migration Progress Dialog */}
       {migrationPhase && (

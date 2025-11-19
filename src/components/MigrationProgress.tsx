@@ -1,15 +1,24 @@
 import { useState, useEffect } from 'react';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from './ui/card';
 import { Progress } from './ui/progress';
 import { Badge } from './ui/badge';
-import { CheckCircle2, Circle, Loader2, AlertCircle } from 'lucide-react';
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from './ui/table';
+import { CheckCircle2, ExternalLink } from 'lucide-react';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from './ui/dialog';
+import { Button } from './ui/button';
 
 interface MigrationProgressProps {
   phaseName: string;
   vmCount: number;
+  vmNames?: string[];
   isOpen: boolean;
   onClose: () => void;
+}
+
+interface VMStatus {
+  name: string;
+  status: 'pending' | 'migrating' | 'completed' | 'failed';
+  progress: number;
+  currentStep: string;
 }
 
 const migrationSteps = [
@@ -22,25 +31,37 @@ const migrationSteps = [
   { id: 7, name: 'Cutover & Verification', description: 'Final cutover and connectivity checks' }
 ];
 
-export function MigrationProgress({ phaseName, vmCount, isOpen, onClose }: MigrationProgressProps) {
+export function MigrationProgress({ phaseName, vmCount, vmNames, isOpen, onClose }: MigrationProgressProps) {
   const [currentStep, setCurrentStep] = useState(0);
   const [overallProgress, setOverallProgress] = useState(0);
   const [isCompleted, setIsCompleted] = useState(false);
+  const [vmStatuses, setVMStatuses] = useState<VMStatus[]>([]);
+  const [startTime, setStartTime] = useState<Date | null>(null);
+  const [completionTime, setCompletionTime] = useState<Date | null>(null);
 
   useEffect(() => {
     if (!isOpen) {
       setCurrentStep(0);
       setOverallProgress(0);
       setIsCompleted(false);
+      setVMStatuses([]);
+      setStartTime(null);
+      setCompletionTime(null);
       return;
     }
 
+    // Set start time when migration begins
+    setStartTime(new Date());
+
     const interval = setInterval(() => {
       setCurrentStep(prev => {
-        if (prev < migrationSteps.length - 1) {
+        if (prev < migrationSteps.length) {
           return prev + 1;
         } else {
           setIsCompleted(true);
+          if (!completionTime) {
+            setCompletionTime(new Date());
+          }
           clearInterval(interval);
           return prev;
         }
@@ -48,6 +69,12 @@ export function MigrationProgress({ phaseName, vmCount, isOpen, onClose }: Migra
 
       setOverallProgress(prev => {
         const newProgress = Math.min(prev + (100 / migrationSteps.length), 100);
+        if (newProgress >= 100) {
+          setIsCompleted(true);
+          if (!completionTime) {
+            setCompletionTime(new Date());
+          }
+        }
         return newProgress;
       });
     }, 3000); // Each step takes 3 seconds
@@ -61,108 +88,248 @@ export function MigrationProgress({ phaseName, vmCount, isOpen, onClose }: Migra
     return 'pending';
   };
 
+  // Count completed VMs
+  const completedVMs = vmStatuses.filter(vm => vm.status === 'completed').length;
+  const migratingVMs = vmStatuses.filter(vm => vm.status === 'migrating').length;
+  const pendingVMs = vmStatuses.filter(vm => vm.status === 'pending').length;
+
+  // Initialize VM statuses when dialog opens
+  useEffect(() => {
+    if (!isOpen) {
+      return;
+    }
+
+    if (vmNames && vmNames.length > 0) {
+      setVMStatuses(vmNames.map(name => ({
+        name,
+        status: 'pending' as const,
+        progress: 0,
+        currentStep: 'Waiting to start...'
+      })));
+    } else {
+      // Generate mock VM names if not provided
+      const mockVMNames = Array.from({ length: vmCount }, (_, i) => `GB${String(i + 1).padStart(5, '0')}`);
+      setVMStatuses(mockVMNames.map(name => ({
+        name,
+        status: 'pending' as const,
+        progress: 0,
+        currentStep: 'Waiting to start...'
+      })));
+    }
+  }, [isOpen, vmNames, vmCount]);
+
+  // Update VM statuses based on overall progress
+  useEffect(() => {
+    if (!isOpen || vmStatuses.length === 0) return;
+
+    const interval = setInterval(() => {
+      setVMStatuses(prevStatuses => {
+        return prevStatuses.map((vm, index) => {
+          // If overall migration is complete, mark all VMs as complete
+          if (isCompleted || overallProgress >= 100) {
+            return {
+              ...vm,
+              status: 'completed' as const,
+              progress: 100,
+              currentStep: 'Migration Complete'
+            };
+          }
+
+          // Stagger VM migrations - start each VM at different times
+          const vmStartDelay = index * 2; // Each VM starts 2 seconds after the previous one
+          const elapsedTime = (currentStep * 3); // Use currentStep directly for more accurate timing
+          
+          if (elapsedTime < vmStartDelay) {
+            return vm; // VM hasn't started yet
+          }
+
+          // Calculate VM progress based on elapsed time
+          const vmElapsedTime = elapsedTime - vmStartDelay;
+          const totalDuration = 21; // 7 steps * 3 seconds
+          const vmProgress = Math.min((vmElapsedTime / totalDuration) * 100, 100);
+
+          // Determine VM status
+          let status: 'pending' | 'migrating' | 'completed' | 'failed' = 'migrating';
+          if (vmProgress >= 100) {
+            status = 'completed';
+          } else if (vmProgress === 0) {
+            status = 'pending';
+          }
+
+          // Determine current step based on progress
+          const stepIndex = Math.min(Math.floor(vmProgress / (100 / migrationSteps.length)), migrationSteps.length - 1);
+          const currentStepName = status === 'completed' ? 'Migration Complete' : migrationSteps[stepIndex]?.name || 'Preparing...';
+
+          return {
+            ...vm,
+            status,
+            progress: vmProgress,
+            currentStep: currentStepName
+          };
+        });
+      });
+    }, 1000); // Update every second
+
+    return () => clearInterval(interval);
+  }, [isOpen, currentStep, overallProgress, isCompleted, vmStatuses.length]);
+
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="max-w-3xl max-h-[80vh] overflow-y-auto">
+      <DialogContent className="w-[98vw] sm:max-w-[98vw] max-w-none max-h-[98vh] overflow-y-auto p-6">
         <DialogHeader>
-          <DialogTitle className="text-[#DB0011]">
+          <DialogTitle className="text-[#DB0011] text-2xl">
             MTV Migration in Progress
           </DialogTitle>
-          <DialogDescription className="text-slate-600">
+          <DialogDescription className="text-slate-600 text-base">
             Phase: {phaseName} • {vmCount} VMs being migrated using Migration Toolkit for Virtualization
           </DialogDescription>
         </DialogHeader>
 
-        <div className="space-y-6 py-4">
-          {/* Overall Progress */}
-          <div className="space-y-2">
+        <div className="py-4 w-full">{/* Overall Progress */}
+          <div className="space-y-3 mb-6 p-4 bg-slate-50 rounded-lg border">
             <div className="flex items-center justify-between">
-              <span className="text-slate-900">Overall Migration Progress</span>
-              <span className="text-slate-600">{Math.round(overallProgress)}%</span>
+              <span className="text-slate-900 text-lg">Overall Migration Progress - Step {currentStep}/{migrationSteps.length}</span>
+              <span className="text-slate-600 text-lg">{Math.round(overallProgress)}%</span>
             </div>
-            <Progress value={overallProgress} className="h-3" />
+            <Progress value={overallProgress} className="h-4" />
             {isCompleted && (
-              <div className="flex items-center gap-2 text-green-600 mt-2">
-                <CheckCircle2 className="size-5" />
-                <span>Migration completed successfully!</span>
+              <div className="flex items-center gap-2 text-green-600 mt-3">
+                <CheckCircle2 className="size-6" />
+                <span className="text-base">Migration completed successfully! All {migrationSteps.length} steps completed.</span>
               </div>
             )}
           </div>
 
-          {/* Migration Steps */}
-          <div className="space-y-1">
-            <h3 className="text-slate-900 mb-4">Migration Steps</h3>
-            <div className="space-y-3">
-              {migrationSteps.map((step, index) => {
-                const status = getStepStatus(index);
-                return (
-                  <div
-                    key={step.id}
-                    className={`flex items-start gap-4 p-4 rounded-lg border ${
-                      status === 'completed' 
-                        ? 'bg-green-50 border-green-200' 
-                        : status === 'in-progress'
-                        ? 'bg-blue-50 border-blue-200'
-                        : 'bg-slate-50 border-slate-200'
-                    }`}
-                  >
-                    <div className="mt-0.5">
-                      {status === 'completed' && (
-                        <CheckCircle2 className="size-6 text-green-600" />
-                      )}
-                      {status === 'in-progress' && (
-                        <Loader2 className="size-6 text-blue-600 animate-spin" />
-                      )}
-                      {status === 'pending' && (
-                        <Circle className="size-6 text-slate-400" />
-                      )}
-                    </div>
-                    <div className="flex-1">
-                      <div className="flex items-center justify-between">
-                        <h4 className="text-slate-900">{step.name}</h4>
-                        <Badge
-                          variant="outline"
-                          className={
-                            status === 'completed'
-                              ? 'bg-green-100 text-green-800'
-                              : status === 'in-progress'
-                              ? 'bg-blue-100 text-blue-800'
-                              : 'bg-slate-100 text-slate-600'
-                          }
-                        >
-                          {status === 'completed' ? 'Completed' : status === 'in-progress' ? 'In Progress' : 'Pending'}
-                        </Badge>
-                      </div>
-                      <p className="text-sm text-slate-600 mt-1">{step.description}</p>
-                    </div>
-                  </div>
-                );
-              })}
+          {/* VM Status Details - Full Width */}
+          <div className="space-y-4 w-full">
+            <div className="flex items-center justify-between">
+              <h3 className="text-slate-900 text-xl">VM Migration Status ({completedVMs}/{vmStatuses.length} Completed)</h3>
+              {startTime && (
+                <div className="text-sm text-slate-600">
+                  <span>Started: {startTime.toLocaleTimeString()}</span>
+                  {completionTime && (
+                    <span className="ml-4">Completed: {completionTime.toLocaleTimeString()}</span>
+                  )}
+                </div>
+              )}
             </div>
+
+            {/* VM Details Table */}
+            {vmStatuses.length > 0 && (
+              <div className="border rounded-lg overflow-x-auto w-full">
+                <div className="max-h-[calc(95vh-320px)] overflow-y-auto min-w-full">
+                  <Table className="w-full">
+                    <TableHeader className="sticky top-0 bg-white z-10">
+                      <TableRow>
+                        <TableHead className="text-base min-w-[140px]">VM Name</TableHead>
+                        <TableHead className="text-base min-w-[120px]">Status</TableHead>
+                        <TableHead className="text-base min-w-[300px]">Progress</TableHead>
+                        <TableHead className="text-base min-w-[400px]">Current Step</TableHead>
+                        <TableHead className="text-base min-w-[150px]">Logs</TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {vmStatuses.map(vm => (
+                        <TableRow key={vm.name} className="h-14">
+                          <TableCell className="font-medium text-base">{vm.name}</TableCell>
+                          <TableCell>
+                            <Badge
+                              variant="outline"
+                              className={
+                                vm.status === 'completed'
+                                  ? 'bg-green-100 text-green-800 text-sm px-3 py-1'
+                                  : vm.status === 'migrating'
+                                  ? 'bg-blue-100 text-blue-800 text-sm px-3 py-1'
+                                  : vm.status === 'failed'
+                                  ? 'bg-red-100 text-red-800 text-sm px-3 py-1'
+                                  : 'bg-slate-100 text-slate-600 text-sm px-3 py-1'
+                              }
+                            >
+                              {vm.status === 'completed' ? 'Completed' : vm.status === 'migrating' ? 'Migrating' : vm.status === 'failed' ? 'Failed' : 'Pending'}
+                            </Badge>
+                          </TableCell>
+                          <TableCell>
+                            <div className="flex items-center gap-3 min-w-[280px]">
+                              <Progress value={vm.progress} className="h-3 flex-1" />
+                              <span className="text-sm text-slate-600 w-12 text-right">{Math.round(vm.progress)}%</span>
+                            </div>
+                          </TableCell>
+                          <TableCell className="text-sm text-slate-600">{vm.currentStep}</TableCell>
+                          <TableCell>
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              className="gap-1 text-[#DB0011] hover:text-[#DB0011] hover:bg-red-50 whitespace-nowrap"
+                              onClick={() => window.open(`https://splunk.hsbc.com/app/search/mioa_vm_logs?vm=${vm.name}`, '_blank')}
+                            >
+                              <ExternalLink className="size-3" />
+                              View Logs
+                            </Button>
+                          </TableCell>
+                        </TableRow>
+                      ))}
+                    </TableBody>
+                  </Table>
+                </div>
+              </div>
+            )}
           </div>
 
-          {/* Migration Details */}
-          <div className="bg-slate-50 p-4 rounded-lg border space-y-2">
-            <h4 className="text-slate-900">Migration Details</h4>
-            <div className="grid grid-cols-2 gap-4 text-sm">
-              <div>
-                <span className="text-slate-600">Migration Tool:</span>
-                <span className="text-slate-900 ml-2">MTV (Migration Toolkit for Virtualization)</span>
-              </div>
-              <div>
-                <span className="text-slate-600">VMs in Phase:</span>
-                <span className="text-slate-900 ml-2">{vmCount}</span>
-              </div>
-              <div>
-                <span className="text-slate-600">Migration Type:</span>
-                <span className="text-slate-900 ml-2">Cold Migration</span>
-              </div>
-              <div>
-                <span className="text-slate-600">Target Platform:</span>
-                <span className="text-slate-900 ml-2">OpenShift Virtualization</span>
+          {/* VM Logs and Metrics - Only show after migration completes */}
+          {isCompleted && (
+            <div className="mt-6 space-y-4">
+              <h3 className="text-slate-900 text-xl">VM Logs and Metrics</h3>
+              <div className="grid grid-cols-1 gap-4">
+                {/* Migration Summary */}
+                <div className="bg-slate-50 p-4 rounded-lg border">
+                  <h4 className="text-slate-900 text-base mb-3">Migration Summary</h4>
+                  <div className="grid grid-cols-4 gap-4 text-sm">
+                    <div>
+                      <span className="text-slate-600">Total VMs Migrated:</span>
+                      <span className="text-slate-900 ml-2">{completedVMs}</span>
+                    </div>
+                    <div>
+                      <span className="text-slate-600">Migration Tool:</span>
+                      <span className="text-slate-900 ml-2">MTV</span>
+                    </div>
+                    <div>
+                      <span className="text-slate-600">Migration Type:</span>
+                      <span className="text-slate-900 ml-2">Cold Migration</span>
+                    </div>
+                    <div>
+                      <span className="text-slate-600">Target Platform:</span>
+                      <span className="text-slate-900 ml-2">OpenShift Virtualization</span>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Detailed Logs Access */}
+                <div className="bg-blue-50 p-4 rounded-lg border border-blue-200">
+                  <div className="flex items-start justify-between">
+                    <div>
+                      <h4 className="text-slate-900 text-base mb-2">Access Detailed Logs & Metrics</h4>
+                      <p className="text-sm text-slate-600 mb-3">
+                        View comprehensive migration logs, performance metrics, and troubleshooting information in Splunk.
+                      </p>
+                      <ul className="text-sm text-slate-600 space-y-1 mb-3">
+                        <li>• Real-time migration logs for all VMs</li>
+                        <li>• Performance metrics and resource utilization</li>
+                        <li>• Error logs and troubleshooting data</li>
+                        <li>• Migration duration and network transfer statistics</li>
+                      </ul>
+                    </div>
+                    <Button
+                      className="gap-2 bg-[#DB0011] hover:bg-[#B00010] text-white"
+                      onClick={() => window.open('https://splunk.hsbc.com/app/search/mioa_migration_dashboard', '_blank')}
+                    >
+                      <ExternalLink className="size-4" />
+                      Open Splunk Dashboard
+                    </Button>
+                  </div>
+                </div>
               </div>
             </div>
-          </div>
+          )}
         </div>
       </DialogContent>
     </Dialog>

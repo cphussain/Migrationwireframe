@@ -17,10 +17,10 @@ export function Login({ onLogin }: LoginProps) {
 
   // Mock user credentials with roles and regions
   const mockUsers = [
-    { username: 'admin', password: 'admin123', role: 'Administrator', region: undefined },
-    { username: 'john.doe', password: 'password123', role: 'Region Lead', region: 'US-East' },
-    { username: 'jane.smith', password: 'password123', role: 'Region Lead', region: 'EU-Central' },
-    { username: 'mike.wilson', password: 'password123', role: 'Migration Engineer', region: undefined },
+    { username: 'admin', password: 'Adm!n@2024#Secure', role: 'Administrator', region: undefined },
+    { username: 'john.doe', password: 'J0hn$D0e!2024#MiOA', role: 'Region Lead', region: 'US-East' },
+    { username: 'jane.smith', password: 'J@ne$m!th#2024#EU', role: 'Region Lead', region: 'EU-Central' },
+    { username: 'mike.wilson', password: 'M!ke$W1ls0n@2024#Eng', role: 'Migration Engineer', region: undefined },
   ];
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -119,14 +119,6 @@ export function Login({ onLogin }: LoginProps) {
               <Button type="submit" className="w-full bg-[#DB0011] hover:bg-[#A50010]">
                 Sign In
               </Button>
-
-              <div className="mt-4 p-3 bg-slate-50 rounded text-sm text-slate-600">
-                <p className="mb-2">Demo Credentials:</p>
-                <p>• admin / admin123 (Administrator)</p>
-                <p>• john.doe / password123 (Region Lead - US-East)</p>
-                <p>• jane.smith / password123 (Region Lead - EU-Central)</p>
-                <p>• mike.wilson / password123 (Migration Engineer)</p>
-              </div>
             </form>
           </CardContent>
         </Card>

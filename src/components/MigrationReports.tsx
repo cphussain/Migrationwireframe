@@ -5,6 +5,7 @@ import { Badge } from './ui/badge';
 import { Progress } from './ui/progress';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, PieChart, Pie, Cell } from 'recharts';
 import { LoadingSpinner } from './LoadingSpinner';
+import { getRegionReports, getPhaseReports, type RegionReport, type PhaseReport } from '../data/mockApi';
 
 interface UserSession {
   username: string;
@@ -16,20 +17,6 @@ interface MigrationReportsProps {
   userSession: UserSession;
 }
 
-const regionData = [
-  { region: 'US-East', total: 15, completed: 8, inProgress: 5, notStarted: 2 },
-  { region: 'US-West', total: 12, completed: 4, inProgress: 6, notStarted: 2 },
-  { region: 'EU-Central', total: 18, completed: 10, inProgress: 6, notStarted: 2 },
-  { region: 'APAC', total: 5, completed: 1, inProgress: 2, notStarted: 2 }
-];
-
-const phaseData = [
-  { phase: 'Phase 1', region: 'US-East', vms: 5, assignedTo: 'John Doe', progress: 80 },
-  { phase: 'Phase 2', region: 'EU-Central', vms: 8, assignedTo: 'Jane Smith', progress: 25 },
-  { phase: 'Phase 3', region: 'US-West', vms: 6, assignedTo: 'Mike Johnson', progress: 100 },
-  { phase: 'Phase 4', region: 'APAC', vms: 3, assignedTo: 'Sarah Lee', progress: 50 }
-];
-
 const statusData = [
   { name: 'Completed', value: 23, color: '#10b981' },
   { name: 'In Progress', value: 19, color: '#DB0011' },
@@ -38,6 +25,8 @@ const statusData = [
 
 export function MigrationReports({ userSession }: MigrationReportsProps) {
   const [isLoading, setIsLoading] = useState(true);
+  const [regionData, setRegionData] = useState<RegionReport[]>([]);
+  const [phaseData, setPhaseData] = useState<PhaseReport[]>([]);
 
   useEffect(() => {
     // Simulate a data fetching delay
@@ -46,6 +35,17 @@ export function MigrationReports({ userSession }: MigrationReportsProps) {
     }, 2000);
 
     return () => clearTimeout(timer);
+  }, []);
+
+  useEffect(() => {
+    const fetchReports = async () => {
+      const regions = await getRegionReports();
+      const phases = await getPhaseReports();
+      setRegionData(regions);
+      setPhaseData(phases);
+    };
+
+    fetchReports();
   }, []);
 
   if (isLoading) {
