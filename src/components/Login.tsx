@@ -39,37 +39,38 @@ export function Login({ onLogin }: LoginProps) {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-[#DB0011] to-[#A50010]">
+    <div className="min-h-screen flex items-center justify-center bg-white">
       <div className="w-full max-w-md p-6">
         {/* Logo Section */}
         <div className="text-center mb-8">
           <div className="flex items-center justify-center gap-2 mb-4">
-            <div className="flex items-center gap-2 bg-white px-4 py-3 rounded-lg shadow-lg">
+            <div className="flex items-center gap-2 bg-[#DB0011] px-4 py-3 rounded-lg shadow-lg">
               <svg width="50" height="50" viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg">
-                <rect x="2" y="8" width="12" height="8" fill="#607B8B" rx="1"/>
-                <rect x="2" y="18" width="12" height="8" fill="#607B8B" rx="1"/>
-                <rect x="2" y="28" width="12" height="8" fill="#607B8B" rx="1"/>
-                <rect x="16" y="8" width="12" height="8" fill="#607B8B" rx="1"/>
-                <rect x="16" y="18" width="12" height="8" fill="#607B8B" rx="1"/>
-                <rect x="16" y="28" width="12" height="8" fill="#607B8B" rx="1"/>
-                <rect x="30" y="8" width="8" height="8" fill="#607B8B" rx="1"/>
-                <rect x="30" y="18" width="8" height="8" fill="#607B8B" rx="1"/>
-                <rect x="30" y="28" width="8" height="8" fill="#607B8B" rx="1"/>
+                <rect x="2" y="8" width="12" height="8" fill="white" rx="1"/>
+                <rect x="2" y="18" width="12" height="8" fill="white" rx="1"/>
+                <rect x="2" y="28" width="12" height="8" fill="white" rx="1"/>
+                <rect x="16" y="8" width="12" height="8" fill="white" rx="1"/>
+                <rect x="16" y="18" width="12" height="8" fill="white" rx="1"/>
+                <rect x="16" y="28" width="12" height="8" fill="white" rx="1"/>
+                <rect x="30" y="8" width="8" height="8" fill="white" rx="1"/>
+                <rect x="30" y="18" width="8" height="8" fill="white" rx="1"/>
+                <rect x="30" y="28" width="8" height="8" fill="white" rx="1"/>
               </svg>
-              <ArrowRight className="size-8 text-[#DB0011]" />
+              <ArrowRight className="size-8 text-white" />
               <svg width="50" height="50" viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg">
-                <path d="M20 4L4 12V28L20 36L36 28V12L20 4Z" fill="#EE0000"/>
-                <path d="M20 14L14 17V23L20 26L26 23V17L20 14Z" fill="white"/>
+                <path d="M20 4L4 12V28L20 36L36 28V12L20 4Z" fill="white"/>
+                <path d="M20 14L14 17V23L20 26L26 23V17L20 14Z" fill="#DB0011"/>
               </svg>
             </div>
           </div>
-          <h1 className="text-white mb-2">MiOA</h1>
-          <p className="text-white/90">Migration Orchestration & Automation</p>
-          <p className="text-white/80 text-sm mt-1">Platform Migration</p>
+          <h1 className="text-[#DB0011] mb-2">MiOA</h1>
+          <p className="text-[#DB0011]">Migration, Innovation &</p>
+          <p className="text-[#DB0011]">Orchestration Assistant</p>
+          <p className="text-[#DB0011]/70 text-sm mt-1">Platform Migration</p>
         </div>
 
         {/* Login Card */}
-        <Card>
+        <Card className="border-2 border-[#DB0011] shadow-xl">
           <CardHeader>
             <CardTitle className="text-[#DB0011]">Sign In</CardTitle>
             <CardDescription className="text-slate-600">
@@ -88,7 +89,7 @@ export function Login({ onLogin }: LoginProps) {
                     placeholder="Enter your username"
                     value={username}
                     onChange={(e) => setUsername(e.target.value)}
-                    className="pl-10"
+                    className="pl-10 border-slate-300 focus:border-[#DB0011] focus:ring-[#DB0011]"
                     required
                   />
                 </div>
@@ -104,7 +105,7 @@ export function Login({ onLogin }: LoginProps) {
                     placeholder="Enter your password"
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
-                    className="pl-10"
+                    className="pl-10 border-slate-300 focus:border-[#DB0011] focus:ring-[#DB0011]"
                     required
                   />
                 </div>
@@ -116,7 +117,7 @@ export function Login({ onLogin }: LoginProps) {
                 </Alert>
               )}
 
-              <Button type="submit" className="w-full bg-[#DB0011] hover:bg-[#A50010]">
+              <Button type="submit" className="w-full bg-[#DB0011] hover:bg-[#A50010] text-white">
                 Sign In
               </Button>
             </form>

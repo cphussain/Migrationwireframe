@@ -70,4 +70,4 @@ All user accounts now have strong, secure passwords following enterprise securit
 ---
 
 **Generated**: 2024  
-**For**: MiOA Platform - Migration Orchestration & Automation
+**For**: MiOA Platform - Migration, Innovation & Orchestration Assistant

@@ -7,86 +7,92 @@ export interface VM {
   name: string;
   serviceName: string;
   region: string;
+  country: string;
+  datacenter: string;
   category: string;
   cpu: number;
   memory: number;
   storage: number;
   phase: string;
   status: string;
+  os: 'Windows' | 'Linux';
+  patchingCR?: string;
+  patchingTime?: string;
+  lastPatchDiscovery?: string;
 }
 
 const vmInventoryData: VM[] = [
   // US-East Region - C1 VMs (Simple, Direct Migration)
-  { id: '1', name: 'GB00001', serviceName: 'Payment Service', region: 'US-East', category: 'C1', cpu: 4, memory: 8, storage: 250, phase: '-', status: 'Active' },
-  { id: '2', name: 'GB00002', serviceName: 'Email Service', region: 'US-East', category: 'C1', cpu: 2, memory: 4, storage: 100, phase: '-', status: 'Active' },
-  { id: '3', name: 'GB00003', serviceName: 'Auth Service', region: 'US-East', category: 'C1', cpu: 2, memory: 8, storage: 200, phase: '-', status: 'Active' },
-  { id: '4', name: 'GB00004', serviceName: 'API Gateway', region: 'US-East', category: 'C1', cpu: 4, memory: 8, storage: 300, phase: '-', status: 'Active' },
+  { id: '1', name: 'GB00001', serviceName: 'Payment Service', region: 'US-East', country: 'United States', datacenter: 'US-EAST-DC01', category: 'C1', cpu: 4, memory: 8, storage: 250, phase: '-', status: 'Active', os: 'Linux', patchingCR: 'CHG2024001', patchingTime: '2025-12-15 02:00 AM', lastPatchDiscovery: '2025-11-18 10:30 AM' },
+  { id: '2', name: 'GB00002', serviceName: 'Email Service', region: 'US-East', country: 'United States', datacenter: 'US-EAST-DC01', category: 'C1', cpu: 2, memory: 4, storage: 100, phase: '-', status: 'Active', os: 'Windows', patchingCR: 'CHG2024002', patchingTime: '2025-12-20 03:00 AM', lastPatchDiscovery: '2025-11-19 09:15 AM' },
+  { id: '3', name: 'GB00003', serviceName: 'Auth Service', region: 'US-East', country: 'United States', datacenter: 'US-EAST-DC01', category: 'C1', cpu: 2, memory: 8, storage: 200, phase: '-', status: 'Active', os: 'Linux', patchingCR: 'CHG2024001', patchingTime: '2025-12-15 02:00 AM', lastPatchDiscovery: '2025-11-18 10:30 AM' },
+  { id: '4', name: 'GB00004', serviceName: 'API Gateway', region: 'US-East', country: 'United States', datacenter: 'US-EAST-DC01', category: 'C1', cpu: 4, memory: 8, storage: 300, phase: '-', status: 'Active', os: 'Linux', patchingCR: 'CHG2024003', patchingTime: '2025-12-18 01:00 AM', lastPatchDiscovery: '2025-11-19 11:45 AM' },
   
   // US-East Region - C2 VMs (Storage Offloading)
-  { id: '5', name: 'GB00005', serviceName: 'Customer Portal', region: 'US-East', category: 'C2', cpu: 8, memory: 32, storage: 1500, phase: '-', status: 'Active' },
-  { id: '6', name: 'GB00006', serviceName: 'Data Warehouse', region: 'US-East', category: 'C2', cpu: 16, memory: 64, storage: 2000, phase: '-', status: 'Active' },
-  { id: '7', name: 'GB00007', serviceName: 'File Server', region: 'US-East', category: 'C2', cpu: 8, memory: 32, storage: 1800, phase: '-', status: 'Active' },
+  { id: '5', name: 'GB00005', serviceName: 'Customer Portal', region: 'US-East', country: 'United States', datacenter: 'US-EAST-DC02', category: 'C2', cpu: 8, memory: 32, storage: 1500, phase: '-', status: 'Active', os: 'Windows', patchingCR: 'CHG2024002', patchingTime: '2025-12-20 03:00 AM', lastPatchDiscovery: '2025-11-19 09:15 AM' },
+  { id: '6', name: 'GB00006', serviceName: 'Data Warehouse', region: 'US-East', country: 'United States', datacenter: 'US-EAST-DC02', category: 'C2', cpu: 16, memory: 64, storage: 2000, phase: '-', status: 'Active', os: 'Windows', patchingCR: 'CHG2024004', patchingTime: '2025-12-22 04:00 AM', lastPatchDiscovery: '2025-11-19 02:20 PM' },
+  { id: '7', name: 'GB00007', serviceName: 'File Server', region: 'US-East', country: 'United States', datacenter: 'US-EAST-DC02', category: 'C2', cpu: 8, memory: 32, storage: 1800, phase: '-', status: 'Active', os: 'Windows', patchingCR: 'CHG2024002', patchingTime: '2025-12-20 03:00 AM', lastPatchDiscovery: '2025-11-19 09:15 AM' },
   
   // US-East Region - C3 VMs (Appliance Optimization)
-  { id: '8', name: 'GB00008', serviceName: 'Firewall Appliance', region: 'US-East', category: 'C3', cpu: 4, memory: 16, storage: 500, phase: '-', status: 'Active' },
-  { id: '9', name: 'GB00009', serviceName: 'Load Balancer', region: 'US-East', category: 'C3', cpu: 4, memory: 16, storage: 400, phase: '-', status: 'Active' },
+  { id: '8', name: 'GB00008', serviceName: 'Firewall Appliance', region: 'US-East', country: 'United States', datacenter: 'US-EAST-DC01', category: 'C3', cpu: 4, memory: 16, storage: 500, phase: '-', status: 'Active', os: 'Linux' },
+  { id: '9', name: 'GB00009', serviceName: 'Load Balancer', region: 'US-East', country: 'United States', datacenter: 'US-EAST-DC01', category: 'C3', cpu: 4, memory: 16, storage: 400, phase: '-', status: 'Active', os: 'Linux' },
   
   // US-West Region - C1 VMs
-  { id: '10', name: 'GB00010', serviceName: 'Cache Server', region: 'US-West', category: 'C1', cpu: 2, memory: 8, storage: 200, phase: '-', status: 'Active' },
-  { id: '11', name: 'GB00011', serviceName: 'Web Server', region: 'US-West', category: 'C1', cpu: 4, memory: 8, storage: 250, phase: '-', status: 'Active' },
-  { id: '12', name: 'GB00012', serviceName: 'DNS Server', region: 'US-West', category: 'C1', cpu: 2, memory: 4, storage: 100, phase: '-', status: 'Active' },
-  { id: '13', name: 'GB00013', serviceName: 'Proxy Server', region: 'US-West', category: 'C1', cpu: 4, memory: 8, storage: 300, phase: '-', status: 'Active' },
+  { id: '10', name: 'GB00010', serviceName: 'Cache Server', region: 'US-West', country: 'United States', datacenter: 'US-WEST-DC01', category: 'C1', cpu: 2, memory: 8, storage: 200, phase: '-', status: 'Active', os: 'Linux', patchingCR: 'CHG2024005', patchingTime: '2025-12-16 02:00 AM', lastPatchDiscovery: '2025-11-18 03:45 PM' },
+  { id: '11', name: 'GB00011', serviceName: 'Web Server', region: 'US-West', country: 'United States', datacenter: 'US-WEST-DC01', category: 'C1', cpu: 4, memory: 8, storage: 250, phase: '-', status: 'Active', os: 'Windows', patchingCR: 'CHG2024006', patchingTime: '2025-12-25 03:00 AM', lastPatchDiscovery: '2025-11-19 04:30 PM' },
+  { id: '12', name: 'GB00012', serviceName: 'DNS Server', region: 'US-West', country: 'United States', datacenter: 'US-WEST-DC01', category: 'C1', cpu: 2, memory: 4, storage: 100, phase: '-', status: 'Active', os: 'Linux', patchingCR: 'CHG2024005', patchingTime: '2025-12-16 02:00 AM', lastPatchDiscovery: '2025-11-18 03:45 PM' },
+  { id: '13', name: 'GB00013', serviceName: 'Proxy Server', region: 'US-West', country: 'United States', datacenter: 'US-WEST-DC01', category: 'C1', cpu: 4, memory: 8, storage: 300, phase: '-', status: 'Active', os: 'Linux' },
   
   // US-West Region - C2 VMs
-  { id: '14', name: 'GB00014', serviceName: 'Media Server', region: 'US-West', category: 'C2', cpu: 8, memory: 32, storage: 2500, phase: '-', status: 'Active' },
-  { id: '15', name: 'GB00015', serviceName: 'Backup Server', region: 'US-West', category: 'C2', cpu: 8, memory: 32, storage: 3000, phase: '-', status: 'Active' },
+  { id: '14', name: 'GB00014', serviceName: 'Media Server', region: 'US-West', country: 'United States', datacenter: 'US-WEST-DC02', category: 'C2', cpu: 8, memory: 32, storage: 2500, phase: '-', status: 'Active', os: 'Windows', patchingCR: 'CHG2024006', patchingTime: '2025-12-25 03:00 AM', lastPatchDiscovery: '2025-11-19 04:30 PM' },
+  { id: '15', name: 'GB00015', serviceName: 'Backup Server', region: 'US-West', country: 'United States', datacenter: 'US-WEST-DC02', category: 'C2', cpu: 8, memory: 32, storage: 3000, phase: '-', status: 'Active', os: 'Linux', patchingCR: 'CHG2024007', patchingTime: '2025-12-28 01:00 AM', lastPatchDiscovery: '2025-11-19 05:15 PM' },
   
   // US-West Region - C4 VMs
-  { id: '16', name: 'GB00016', serviceName: 'Security Appliance', region: 'US-West', category: 'C4', cpu: 8, memory: 32, storage: 1500, phase: '-', status: 'Active' },
+  { id: '16', name: 'GB00016', serviceName: 'Security Appliance', region: 'US-West', country: 'United States', datacenter: 'US-WEST-DC02', category: 'C4', cpu: 8, memory: 32, storage: 1500, phase: '-', status: 'Active', os: 'Linux' },
   
   // US-West Region - C5 VMs
-  { id: '17', name: 'GB00017', serviceName: 'SAN Controller', region: 'US-West', category: 'C5', cpu: 4, memory: 16, storage: 500, phase: '-', status: 'Active' },
+  { id: '17', name: 'GB00017', serviceName: 'SAN Controller', region: 'US-West', country: 'United States', datacenter: 'US-WEST-DC02', category: 'C5', cpu: 4, memory: 16, storage: 500, phase: '-', status: 'Active', os: 'Linux' },
   
   // EU-Central Region - C1 VMs
-  { id: '18', name: 'GB00018', serviceName: 'Message Queue', region: 'EU-Central', category: 'C1', cpu: 4, memory: 8, storage: 300, phase: '-', status: 'Active' },
-  { id: '19', name: 'GB00019', serviceName: 'Session Store', region: 'EU-Central', category: 'C1', cpu: 2, memory: 8, storage: 200, phase: '-', status: 'Active' },
-  { id: '20', name: 'GB00020', serviceName: 'Config Server', region: 'EU-Central', category: 'C1', cpu: 2, memory: 4, storage: 100, phase: '-', status: 'Active' },
-  { id: '21', name: 'GB00021', serviceName: 'Logging Service', region: 'EU-Central', category: 'C1', cpu: 4, memory: 8, storage: 400, phase: '-', status: 'Active' },
-  { id: '22', name: 'GB00022', serviceName: 'Metrics Server', region: 'EU-Central', category: 'C1', cpu: 2, memory: 8, storage: 250, phase: '-', status: 'Active' },
+  { id: '18', name: 'GB00018', serviceName: 'Message Queue', region: 'EU-Central', country: 'Germany', datacenter: 'FRANKFURT-DC01', category: 'C1', cpu: 4, memory: 8, storage: 300, phase: '-', status: 'Active', os: 'Linux', patchingCR: 'CHG2024008', patchingTime: '2025-12-17 01:00 AM', lastPatchDiscovery: '2025-11-18 08:30 AM' },
+  { id: '19', name: 'GB00019', serviceName: 'Session Store', region: 'EU-Central', country: 'Germany', datacenter: 'FRANKFURT-DC01', category: 'C1', cpu: 2, memory: 8, storage: 200, phase: '-', status: 'Active', os: 'Windows', patchingCR: 'CHG2024009', patchingTime: '2025-12-19 02:00 AM', lastPatchDiscovery: '2025-11-18 09:45 AM' },
+  { id: '20', name: 'GB00020', serviceName: 'Config Server', region: 'EU-Central', country: 'Germany', datacenter: 'FRANKFURT-DC01', category: 'C1', cpu: 2, memory: 4, storage: 100, phase: '-', status: 'Active', os: 'Linux', patchingCR: 'CHG2024008', patchingTime: '2025-12-17 01:00 AM', lastPatchDiscovery: '2025-11-18 08:30 AM' },
+  { id: '21', name: 'GB00021', serviceName: 'Logging Service', region: 'EU-Central', country: 'Germany', datacenter: 'FRANKFURT-DC02', category: 'C1', cpu: 4, memory: 8, storage: 400, phase: '-', status: 'Active', os: 'Linux' },
+  { id: '22', name: 'GB00022', serviceName: 'Metrics Server', region: 'EU-Central', country: 'Germany', datacenter: 'FRANKFURT-DC02', category: 'C1', cpu: 2, memory: 8, storage: 250, phase: '-', status: 'Active', os: 'Linux', patchingCR: 'CHG2024010', patchingTime: '2025-12-21 01:30 AM', lastPatchDiscovery: '2025-11-19 10:20 AM' },
   
   // EU-Central Region - C2 VMs
-  { id: '23', name: 'GB00023', serviceName: 'Analytics Engine', region: 'EU-Central', category: 'C2', cpu: 16, memory: 64, storage: 2000, phase: '-', status: 'Active' },
-  { id: '24', name: 'GB00024', serviceName: 'Document Store', region: 'EU-Central', category: 'C2', cpu: 8, memory: 32, storage: 1800, phase: '-', status: 'Active' },
-  { id: '25', name: 'GB00025', serviceName: 'Archive Server', region: 'EU-Central', category: 'C2', cpu: 8, memory: 32, storage: 2200, phase: '-', status: 'Active' },
+  { id: '23', name: 'GB00023', serviceName: 'Analytics Engine', region: 'EU-Central', country: 'Germany', datacenter: 'FRANKFURT-DC02', category: 'C2', cpu: 16, memory: 64, storage: 2000, phase: '-', status: 'Active', os: 'Windows', patchingCR: 'CHG2024009', patchingTime: '2025-12-19 02:00 AM', lastPatchDiscovery: '2025-11-18 09:45 AM' },
+  { id: '24', name: 'GB00024', serviceName: 'Document Store', region: 'EU-Central', country: 'Germany', datacenter: 'FRANKFURT-DC02', category: 'C2', cpu: 8, memory: 32, storage: 1800, phase: '-', status: 'Active', os: 'Linux', patchingCR: 'CHG2024011', patchingTime: '2025-12-23 03:00 AM', lastPatchDiscovery: '2025-11-19 11:30 AM' },
+  { id: '25', name: 'GB00025', serviceName: 'Archive Server', region: 'EU-Central', country: 'Germany', datacenter: 'FRANKFURT-DC02', category: 'C2', cpu: 8, memory: 32, storage: 2200, phase: '-', status: 'Active', os: 'Windows' },
   
   // EU-Central Region - C3 VMs
-  { id: '26', name: 'GB00026', serviceName: 'VPN Appliance', region: 'EU-Central', category: 'C3', cpu: 4, memory: 16, storage: 300, phase: '-', status: 'Active' },
-  { id: '27', name: 'GB00027', serviceName: 'Monitoring Tool', region: 'EU-Central', category: 'C3', cpu: 4, memory: 16, storage: 600, phase: '-', status: 'Active' },
+  { id: '26', name: 'GB00026', serviceName: 'VPN Appliance', region: 'EU-Central', country: 'Germany', datacenter: 'FRANKFURT-DC01', category: 'C3', cpu: 4, memory: 16, storage: 300, phase: '-', status: 'Active', os: 'Linux' },
+  { id: '27', name: 'GB00027', serviceName: 'Monitoring Tool', region: 'EU-Central', country: 'Germany', datacenter: 'FRANKFURT-DC01', category: 'C3', cpu: 4, memory: 16, storage: 600, phase: '-', status: 'Active', os: 'Linux' },
   
   // EU-Central Region - C4 VMs
-  { id: '28', name: 'GB00028', serviceName: 'IDS Appliance', region: 'EU-Central', category: 'C4', cpu: 8, memory: 32, storage: 1200, phase: '-', status: 'Active' },
+  { id: '28', name: 'GB00028', serviceName: 'IDS Appliance', region: 'EU-Central', country: 'Germany', datacenter: 'FRANKFURT-DC01', category: 'C4', cpu: 8, memory: 32, storage: 1200, phase: '-', status: 'Active', os: 'Linux' },
   
   // APAC Region - C1 VMs
-  { id: '29', name: 'GB00029', serviceName: 'Mobile API', region: 'APAC', category: 'C1', cpu: 4, memory: 8, storage: 300, phase: '-', status: 'Active' },
-  { id: '30', name: 'GB00030', serviceName: 'Search Service', region: 'APAC', category: 'C1', cpu: 4, memory: 8, storage: 400, phase: '-', status: 'Active' },
-  { id: '31', name: 'GB00031', serviceName: 'Notification Service', region: 'APAC', category: 'C1', cpu: 2, memory: 8, storage: 200, phase: '-', status: 'Active' },
-  { id: '32', name: 'GB00032', serviceName: 'Job Scheduler', region: 'APAC', category: 'C1', cpu: 2, memory: 4, storage: 150, phase: '-', status: 'Active' },
+  { id: '29', name: 'GB00029', serviceName: 'Mobile API', region: 'APAC', country: 'Hong Kong', datacenter: 'HK-CENTRAL-DC01', category: 'C1', cpu: 4, memory: 8, storage: 300, phase: '-', status: 'Active', os: 'Linux', patchingCR: 'CHG2024012', patchingTime: '2025-12-14 23:00 PM', lastPatchDiscovery: '2025-11-18 06:15 AM' },
+  { id: '30', name: 'GB00030', serviceName: 'Search Service', region: 'APAC', country: 'Hong Kong', datacenter: 'HK-CENTRAL-DC01', category: 'C1', cpu: 4, memory: 8, storage: 400, phase: '-', status: 'Active', os: 'Linux', patchingCR: 'CHG2024012', patchingTime: '2025-12-14 23:00 PM', lastPatchDiscovery: '2025-11-18 06:15 AM' },
+  { id: '31', name: 'GB00031', serviceName: 'Notification Service', region: 'APAC', country: 'Hong Kong', datacenter: 'HK-CENTRAL-DC01', category: 'C1', cpu: 2, memory: 8, storage: 200, phase: '-', status: 'Active', os: 'Windows', patchingCR: 'CHG2024013', patchingTime: '2025-12-26 23:30 PM', lastPatchDiscovery: '2025-11-19 07:00 AM' },
+  { id: '32', name: 'GB00032', serviceName: 'Job Scheduler', region: 'APAC', country: 'Singapore', datacenter: 'SINGAPORE-DC01', category: 'C1', cpu: 2, memory: 4, storage: 150, phase: '-', status: 'Active', os: 'Windows', patchingCR: 'CHG2024013', patchingTime: '2025-12-26 23:30 PM', lastPatchDiscovery: '2025-11-19 07:00 AM' },
   
   // APAC Region - C2 VMs
-  { id: '33', name: 'GB00033', serviceName: 'Database Server', region: 'APAC', category: 'C2', cpu: 16, memory: 64, storage: 2500, phase: '-', status: 'Active' },
-  { id: '34', name: 'GB00034', serviceName: 'CRM Application', region: 'APAC', category: 'C2', cpu: 8, memory: 32, storage: 1600, phase: '-', status: 'Active' },
+  { id: '33', name: 'GB00033', serviceName: 'Database Server', region: 'APAC', country: 'Singapore', datacenter: 'SINGAPORE-DC01', category: 'C2', cpu: 16, memory: 64, storage: 2500, phase: '-', status: 'Active', os: 'Windows', patchingCR: 'CHG2024014', patchingTime: '2025-12-27 00:00 AM', lastPatchDiscovery: '2025-11-19 08:30 AM' },
+  { id: '34', name: 'GB00034', serviceName: 'CRM Application', region: 'APAC', country: 'Singapore', datacenter: 'SINGAPORE-DC02', category: 'C2', cpu: 8, memory: 32, storage: 1600, phase: '-', status: 'Active', os: 'Windows' },
   
   // APAC Region - C3 VMs
-  { id: '35', name: 'GB00035', serviceName: 'WAF Appliance', region: 'APAC', category: 'C3', cpu: 4, memory: 16, storage: 500, phase: '-', status: 'Active' },
+  { id: '35', name: 'GB00035', serviceName: 'WAF Appliance', region: 'APAC', country: 'Singapore', datacenter: 'SINGAPORE-DC02', category: 'C3', cpu: 4, memory: 16, storage: 500, phase: '-', status: 'Active', os: 'Linux' },
   
   // APAC Region - C5 VMs
-  { id: '36', name: 'GB00036', serviceName: 'Storage Gateway', region: 'APAC', category: 'C5', cpu: 4, memory: 16, storage: 600, phase: '-', status: 'Active' },
+  { id: '36', name: 'GB00036', serviceName: 'Storage Gateway', region: 'APAC', country: 'Singapore', datacenter: 'SINGAPORE-DC02', category: 'C5', cpu: 4, memory: 16, storage: 600, phase: '-', status: 'Active', os: 'Linux' },
   
   // Additional VMs for better examples
-  { id: '37', name: 'GB00037', serviceName: 'Report Generator', region: 'US-East', category: 'C1', cpu: 2, memory: 8, storage: 200, phase: '-', status: 'Active' },
-  { id: '38', name: 'GB00038', serviceName: 'ETL Service', region: 'EU-Central', category: 'C2', cpu: 8, memory: 32, storage: 1400, phase: '-', status: 'Active' },
-  { id: '39', name: 'GB00039', serviceName: 'Content Server', region: 'US-West', category: 'C1', cpu: 4, memory: 8, storage: 350, phase: '-', status: 'Active' },
-  { id: '40', name: 'GB00040', serviceName: 'Streaming Server', region: 'APAC', category: 'C2', cpu: 8, memory: 32, storage: 1700, phase: '-', status: 'Active' },
+  { id: '37', name: 'GB00037', serviceName: 'Report Generator', region: 'US-East', country: 'United States', datacenter: 'US-EAST-DC01', category: 'C1', cpu: 2, memory: 8, storage: 200, phase: '-', status: 'Active', os: 'Windows', patchingCR: 'CHG2024002', patchingTime: '2025-12-20 03:00 AM', lastPatchDiscovery: '2025-11-19 09:15 AM' },
+  { id: '38', name: 'GB00038', serviceName: 'ETL Service', region: 'EU-Central', country: 'Germany', datacenter: 'FRANKFURT-DC02', category: 'C2', cpu: 8, memory: 32, storage: 1400, phase: '-', status: 'Active', os: 'Linux', patchingCR: 'CHG2024011', patchingTime: '2025-12-23 03:00 AM', lastPatchDiscovery: '2025-11-19 11:30 AM' },
+  { id: '39', name: 'GB00039', serviceName: 'Content Server', region: 'US-West', country: 'United States', datacenter: 'US-WEST-DC01', category: 'C1', cpu: 4, memory: 8, storage: 350, phase: '-', status: 'Active', os: 'Windows' },
+  { id: '40', name: 'GB00040', serviceName: 'Streaming Server', region: 'APAC', country: 'Hong Kong', datacenter: 'HK-CENTRAL-DC01', category: 'C2', cpu: 8, memory: 32, storage: 1700, phase: '-', status: 'Active', os: 'Linux', patchingCR: 'CHG2024015', patchingTime: '2025-12-29 23:00 PM', lastPatchDiscovery: '2025-11-19 09:45 AM' },
 ];
 
 export const getVMInventory = async (): Promise<VM[]> => {

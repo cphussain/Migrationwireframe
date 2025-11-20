@@ -175,7 +175,7 @@ export function MigrationProgress({ phaseName, vmCount, vmNames, isOpen, onClose
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="w-[98vw] sm:max-w-[98vw] max-w-none max-h-[98vh] overflow-y-auto p-6">
+      <DialogContent className="sm:max-w-5xl max-h-[90vh] overflow-y-auto p-6">
         <DialogHeader>
           <DialogTitle className="text-[#DB0011] text-2xl">
             MTV Migration in Progress
@@ -216,42 +216,42 @@ export function MigrationProgress({ phaseName, vmCount, vmNames, isOpen, onClose
 
             {/* VM Details Table */}
             {vmStatuses.length > 0 && (
-              <div className="border rounded-lg overflow-x-auto w-full">
-                <div className="max-h-[calc(95vh-320px)] overflow-y-auto min-w-full">
-                  <Table className="w-full">
+              <div className="border rounded-lg overflow-hidden w-full">
+                <div className="max-h-[calc(90vh-320px)] overflow-y-auto">
+                  <Table>
                     <TableHeader className="sticky top-0 bg-white z-10">
                       <TableRow>
-                        <TableHead className="text-base min-w-[140px]">VM Name</TableHead>
-                        <TableHead className="text-base min-w-[120px]">Status</TableHead>
-                        <TableHead className="text-base min-w-[300px]">Progress</TableHead>
-                        <TableHead className="text-base min-w-[400px]">Current Step</TableHead>
-                        <TableHead className="text-base min-w-[150px]">Logs</TableHead>
+                        <TableHead className="w-[120px]">VM Name</TableHead>
+                        <TableHead className="w-[100px]">Status</TableHead>
+                        <TableHead className="w-[240px]">Progress</TableHead>
+                        <TableHead>Current Step</TableHead>
+                        <TableHead className="w-[100px]">Logs</TableHead>
                       </TableRow>
                     </TableHeader>
                     <TableBody>
                       {vmStatuses.map(vm => (
-                        <TableRow key={vm.name} className="h-14">
-                          <TableCell className="font-medium text-base">{vm.name}</TableCell>
+                        <TableRow key={vm.name}>
+                          <TableCell>{vm.name}</TableCell>
                           <TableCell>
                             <Badge
                               variant="outline"
                               className={
                                 vm.status === 'completed'
-                                  ? 'bg-green-100 text-green-800 text-sm px-3 py-1'
+                                  ? 'bg-green-100 text-green-800 text-xs px-2 py-0.5'
                                   : vm.status === 'migrating'
-                                  ? 'bg-blue-100 text-blue-800 text-sm px-3 py-1'
+                                  ? 'bg-blue-100 text-blue-800 text-xs px-2 py-0.5'
                                   : vm.status === 'failed'
-                                  ? 'bg-red-100 text-red-800 text-sm px-3 py-1'
-                                  : 'bg-slate-100 text-slate-600 text-sm px-3 py-1'
+                                  ? 'bg-red-100 text-red-800 text-xs px-2 py-0.5'
+                                  : 'bg-slate-100 text-slate-600 text-xs px-2 py-0.5'
                               }
                             >
                               {vm.status === 'completed' ? 'Completed' : vm.status === 'migrating' ? 'Migrating' : vm.status === 'failed' ? 'Failed' : 'Pending'}
                             </Badge>
                           </TableCell>
                           <TableCell>
-                            <div className="flex items-center gap-3 min-w-[280px]">
-                              <Progress value={vm.progress} className="h-3 flex-1" />
-                              <span className="text-sm text-slate-600 w-12 text-right">{Math.round(vm.progress)}%</span>
+                            <div className="flex items-center gap-2">
+                              <Progress value={vm.progress} className="h-2 flex-1" />
+                              <span className="text-xs text-slate-600 w-10 text-right">{Math.round(vm.progress)}%</span>
                             </div>
                           </TableCell>
                           <TableCell className="text-sm text-slate-600">{vm.currentStep}</TableCell>
@@ -259,11 +259,11 @@ export function MigrationProgress({ phaseName, vmCount, vmNames, isOpen, onClose
                             <Button
                               variant="ghost"
                               size="sm"
-                              className="gap-1 text-[#DB0011] hover:text-[#DB0011] hover:bg-red-50 whitespace-nowrap"
+                              className="gap-1 text-[#DB0011] hover:text-[#DB0011] hover:bg-red-50 h-8 px-2"
                               onClick={() => window.open(`https://splunk.hsbc.com/app/search/mioa_vm_logs?vm=${vm.name}`, '_blank')}
                             >
                               <ExternalLink className="size-3" />
-                              View Logs
+                              <span className="text-xs">Logs</span>
                             </Button>
                           </TableCell>
                         </TableRow>
